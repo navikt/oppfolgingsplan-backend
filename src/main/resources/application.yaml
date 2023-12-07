@@ -1,0 +1,41 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  profiles:
+    active: remote
+  main.banner-mode: 'off'
+  flyway:
+    enabled: true
+    locations:
+      - "classpath:db/migration"
+      - "classpath:db/migration/common"
+  datasource:
+    url: "jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_DATABASE}"
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 5
+
+management:
+  endpoint:
+    prometheus.enabled: true
+    health.probes.enabled: true
+    health.show-details: always
+  endpoints.web:
+    base-path: /internal
+    exposure.include: health,prometheus
+  health:
+    livenessstate.enabled: true
+    readinessState.enabled: true
+
+logging.config: "classpath:logback.xml"
+nais.cluster: ${NAIS_CLUSTER_NAME}
+
+no.nav.security.jwt:
+  issuer:
+    tokenx:
+      discoveryurl: ${TOKEN_X_WELL_KNOWN_URL}
+      accepted_audience: ${TOKEN_X_CLIENT_ID}

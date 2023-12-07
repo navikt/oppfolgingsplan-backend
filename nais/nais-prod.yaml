@@ -1,0 +1,61 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: oppfolgingsplan-backend
+  namespace: team-esyfo
+  labels:
+    team: team-esyfo
+spec:
+  image: {{ image }}
+  replicas:
+    min: 2
+    max: 3
+    cpuThresholdPercentage: 90
+  port: 8080
+  liveness:
+    path: /internal/health/livenessState
+    initialDelay: 10
+    timeout: 5
+    periodSeconds: 5
+    failureThreshold: 30
+  readiness:
+    path: /internal/health/readinessState
+    initialDelay: 30
+    periodSeconds: 5
+    timeout: 5
+  prometheus:
+    enabled: true
+    path: /internal/prometheus
+  ingresses:
+    - "https://oppfolgingsplan-backend.intern.nav.no"
+  resources:
+    limits:
+      memory: 600Mi
+    requests:
+      cpu: 400m
+      memory: 600Mi
+  kafka:
+    pool: nav-prod
+  tokenx:
+    enabled: true
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_14
+        tier: db-custom-1-3840
+        diskType: SSD
+        highAvailability: true
+        diskSize: 10
+        pointInTimeRecovery: false
+        diskAutoresize: true
+        name: oppfolgingsplan-backend-db-instance
+        databases:
+          - name: oppfolgingsplan-backend-db
+            envVarPrefix: DB
+            users:
+              - name: bigquery-datastream
+        maintenance:
+          day: 2
+          hour: 2
+        flags:
+          - name: cloudsql.logical_decoding
+            value: "on"

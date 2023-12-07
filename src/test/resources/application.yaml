@@ -1,0 +1,35 @@
+NAIS_CLUSTER_NAME: test
+
+spring:
+  profiles:
+    active: test
+  flyway:
+    enabled: true
+    baselineOnMigrate: true
+    locations: 'classpath:db/migration/common'
+  datasource:
+    url: 'jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_UPPER=false'
+    username: SA
+    password:
+    driver-class-name: 'org.h2.Driver'
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 3
+  kafka:
+    consumer:
+      bootstrap-servers: "localhost:9092"
+      group-id: "test-consumer-group"
+  h2.console:
+    enabled: true
+    path: '/h2'
+
+management:
+  endpoint.prometheus.enabled: true
+  endpoints.web:
+    base-path: /internal
+    exposure.include: health,prometheus
+
+no.nav.security.jwt:
+  issuer:
+    tokenx:
+      discoveryurl: http://localhost:${mock-oauth2-server.port}/tokenx/.well-known/openid-configuration
