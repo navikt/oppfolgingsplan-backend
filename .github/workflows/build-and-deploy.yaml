@@ -3,7 +3,7 @@ on: push
 
 jobs:
   boot-jar-app:
-    uses: navikt/teamesyfo-github-actions-workflows/.github/workflows/boot-jar-app.yaml@executable-gradlew
+    uses: navikt/teamesyfo-github-actions-workflows/.github/workflows/boot-jar-app.yaml@main
     permissions:
       actions: read
       contents: write
