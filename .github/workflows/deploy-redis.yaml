@@ -1,0 +1,28 @@
+name: Deploy Redis
+on:
+  push:
+    paths: ['nais/redis-dev.yaml', 'nais/redis-prod.yaml']
+  workflow_dispatch:
+
+jobs:
+  deploy-redis-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-gcp
+          RESOURCE: nais/redis-dev.yaml
+
+  deploy-redis-prod:
+    if: github.ref == 'refs/heads/main'
+    needs: deploy-redis-dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-gcp
+          RESOURCE: nais/redis-prod.yaml

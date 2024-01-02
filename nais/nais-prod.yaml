@@ -38,6 +38,28 @@ spec:
     pool: nav-prod
   tokenx:
     enabled: true
+  accessPolicy:
+    inbound:
+      rules:
+        - application: oppfolgingsplan-frontend
+    outbound:
+      rules:
+        - application: digdir-krr-proxy
+          namespace: team-rocket
+          cluster: prod-gcp
+        - application: syfobrukertilgang
+          namespace: team-esyfo
+          cluster: prod-gcp
+  azure:
+    application:
+      allowAllUsers: true
+      enabled: true
+      tenant: nav.no
+      replyURLs:
+        - "https://oppfolgingsplan-backend.intern.nav.no/oauth2/callback"
+      claims:
+        extra:
+          - "NAVident"
   gcp:
     sqlInstances:
       - type: POSTGRES_14
@@ -59,3 +81,17 @@ spec:
         flags:
           - name: cloudsql.logical_decoding
             value: "on"
+  env:
+    - name: KRR_URL
+      value: https://digdir-krr-proxy.intern.nav.no/rest/v1/person
+    - name: KRR_SCOPE
+      value: prod-gcp.team-rocket.digdir-krr-proxy
+    - name: SYFOBRUKERTILGANG_URL
+      value: http://syfobrukertilgang
+    - name: SYFOBRUKERTILGANG_ID
+      value: prod-gcp:team-esyfo:syfobrukertilgang
+    - name: OPPFOLGINGSPLAN_FRONTEND_CLIENT_ID
+      value: prod-gcp:team-esyfo:oppfolgingsplan-frontend
+  redis:
+    - instance: oppfolgingsplan
+      access: readwrite
