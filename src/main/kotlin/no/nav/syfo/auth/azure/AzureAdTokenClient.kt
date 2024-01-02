@@ -39,24 +39,26 @@ class AzureAdTokenClient @Autowired constructor(
         )
     }
 
-    private fun requestEntity(scopeClientId: String, token: String): HttpEntity<MultiValueMap<String, String>> {
+    private fun commonRequestBody(scopeClientId: String): LinkedMultiValueMap<String, String> {
         val body = LinkedMultiValueMap<String, String>()
         body.add("client_id", azureAppClientId)
+        body.add("scope", "api://$scopeClientId/.default")
         body.add("client_secret", azureAppClientSecret)
+        return body
+    }
+
+    private fun requestEntity(scopeClientId: String, token: String): HttpEntity<MultiValueMap<String, String>> {
+        val body = commonRequestBody(scopeClientId)
         body.add("client_assertion_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
         body.add("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer")
         body.add("assertion", token)
-        body.add("scope", "api://$scopeClientId/.default")
         body.add("requested_token_use", "on_behalf_of")
         return HttpEntity(body, HttpHeaders().apply { contentType = MediaType.MULTIPART_FORM_DATA })
     }
 
     private fun systemTokenRequestEntity(scopeClientId: String): HttpEntity<MultiValueMap<String, String>> {
-        val body = LinkedMultiValueMap<String, String>()
-        body.add("client_id", azureAppClientId)
-        body.add("scope", "api://$scopeClientId/.default")
+        val body = commonRequestBody(scopeClientId)
         body.add("grant_type", "client_credentials")
-        body.add("client_secret", azureAppClientSecret)
         return HttpEntity(body, HttpHeaders().apply { contentType = MediaType.MULTIPART_FORM_DATA })
     }
 }
