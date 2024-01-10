@@ -53,7 +53,7 @@ class BrukertilgangClient(
 
     private fun getResponse(httpEntity: HttpEntity<*>, ansattFnr: String): ResponseEntity<Boolean> {
         return RestTemplate().exchange(
-            "$baseUrl/api/v2/tilgang/ansatt/{ansattFnr}",
+            "$baseUrl/api/v2/tilgang/ansatt/$ansattFnr",
             HttpMethod.GET,
             httpEntity,
             Boolean::class.java,
