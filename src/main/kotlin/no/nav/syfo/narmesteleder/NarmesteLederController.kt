@@ -98,7 +98,6 @@ class NarmesteLederController @Autowired constructor(
         }
     }
 
-
     companion object {
         private val LOG = LoggerFactory.getLogger(NarmesteLederController::class.java)
     }

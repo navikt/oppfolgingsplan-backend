@@ -104,5 +104,4 @@ class NarmesteLederClient(
             return "oppfolgingsplan-backend-$randomUUID"
         }
     }
-
 }
