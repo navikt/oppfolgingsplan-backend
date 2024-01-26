@@ -31,6 +31,8 @@ repositories {
 val tokenSupportVersion = "3.1.5"
 val mockkVersion = "1.13.8"
 val kotestVersion = "5.6.2"
+val wiremockVersion = "3.3.1"
+val wiremockKotestExtensionVersion = "2.0.1"
 val hikariVersion = "5.1.0"
 val logstashLogbackEncoderVersion = "7.4"
 
@@ -60,6 +62,9 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:$kotestVersion")
     testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("com.h2database:h2")
+    testImplementation("org.wiremock:wiremock-standalone:$wiremockVersion")
+    testImplementation("io.kotest.extensions:kotest-extensions-wiremock:$wiremockKotestExtensionVersion")
+
 }
 
 tasks.withType<KotlinCompile> {

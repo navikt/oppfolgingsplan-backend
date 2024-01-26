@@ -50,6 +50,9 @@ spec:
         - application: syfobrukertilgang
           namespace: team-esyfo
           cluster: prod-gcp
+        - application: isnarmesteleder
+          namespace: teamsykefravr
+          cluster: prod-gcp
   azure:
     application:
       allowAllUsers: true
@@ -92,6 +95,10 @@ spec:
       value: prod-gcp:team-esyfo:syfobrukertilgang
     - name: OPPFOLGINGSPLAN_FRONTEND_CLIENT_ID
       value: prod-gcp:team-esyfo:oppfolgingsplan-frontend
+    - name: NARMESTELEDER_URL
+      value: http://isnarmesteleder.teamsykefravr
+    - name: NARMESTELEDER_CLIENT_ID
+      value: prod-gcp:teamsykefravr:isnarmesteleder
   redis:
     - instance: oppfolgingsplan
       access: readwrite
