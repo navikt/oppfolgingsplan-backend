@@ -39,7 +39,7 @@ class NarmesteLederController @Autowired constructor(
     fun getAktivNarmesteLederIVirksomhet(
         @RequestHeader(NAV_PERSONIDENT_HEADER) fnr: String,
         @RequestHeader(ORGNUMMER_HEADER) virksomhetsnummer: String,
-    ): ResponseEntity<NarmesteLederRelasjonDTO?> {
+    ): ResponseEntity<NarmesteLeder?> {
         metrikk.tellHendelse("get_narmesteledere")
 
         val innloggetIdent = TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
@@ -66,7 +66,7 @@ class NarmesteLederController @Autowired constructor(
                 if (narmesteLedere != null) {
                     return ResponseEntity
                         .status(HttpStatus.OK)
-                        .body(narmesteLedere)
+                        .body(narmesteLedere.mapToNarmesteLeder())
                 } else {
                     return ResponseEntity
                         .status(HttpStatus.NO_CONTENT)
@@ -78,7 +78,7 @@ class NarmesteLederController @Autowired constructor(
 
     @ResponseBody
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE], path = ["/alle"])
-    fun getNarmesteLedere(): ResponseEntity<List<NarmesteLederRelasjonDTO>> {
+    fun getNarmesteLedere(): ResponseEntity<List<NarmesteLeder>> {
         metrikk.tellHendelse("get_narmesteledere")
 
         val innloggetIdent = TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
@@ -90,7 +90,7 @@ class NarmesteLederController @Autowired constructor(
         return if (narmesteLedere.isNotEmpty()) {
             ResponseEntity
                 .status(HttpStatus.OK)
-                .body(narmesteLedere)
+                .body(narmesteLedere.map { it.mapToNarmesteLeder() })
         } else {
             ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
