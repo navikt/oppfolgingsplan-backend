@@ -65,7 +65,7 @@ class NarmesteLederController @Autowired constructor(
                 )
                 return ResponseEntity
                     .status(HttpStatus.NO_CONTENT)
-                    .build()
+                    .body(null)
             }
         }
     }
@@ -81,9 +81,9 @@ class NarmesteLederController @Autowired constructor(
 
         val narmesteLedere = narmesteLederClient.alleAktiveLedereForSykmeldt(ansattFnr = innloggetIdent)
 
-       return ResponseEntity
-           .status(HttpStatus.NO_CONTENT)
-           .build()
+        return ResponseEntity
+            .status(HttpStatus.NO_CONTENT)
+            .body(emptyList())
     }
 
     companion object {
