@@ -63,15 +63,9 @@ class NarmesteLederController @Autowired constructor(
                     narmesteLederIdent = innloggetIdent,
                     virksomhetsnummer = virksomhetsnummer
                 )
-                if (narmesteLedere != null) {
-                    return ResponseEntity
-                        .status(HttpStatus.OK)
-                        .body(narmesteLedere.mapToNarmesteLeder())
-                } else {
-                    return ResponseEntity
-                        .status(HttpStatus.NO_CONTENT)
-                        .build()
-                }
+                return ResponseEntity
+                    .status(HttpStatus.NO_CONTENT)
+                    .build()
             }
         }
     }
@@ -87,15 +81,9 @@ class NarmesteLederController @Autowired constructor(
 
         val narmesteLedere = narmesteLederClient.alleAktiveLedereForSykmeldt(ansattFnr = innloggetIdent)
 
-        return if (narmesteLedere.isNotEmpty()) {
-            ResponseEntity
-                .status(HttpStatus.OK)
-                .body(narmesteLedere.map { it.mapToNarmesteLeder() })
-        } else {
-            ResponseEntity
-                .status(HttpStatus.NO_CONTENT)
-                .build()
-        }
+        return ResponseEntity
+            .status(HttpStatus.NO_CONTENT)
+            .build()
     }
 
     companion object {
