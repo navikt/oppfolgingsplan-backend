@@ -26,7 +26,7 @@ class NarmesteLederClient(
     private val contextHolder: TokenValidationContextHolder,
 ) {
     @Cacheable(value = ["aktive_ledere"], key = "#ansattFnr", condition = "#ansattFnr != null")
-    fun alleAktiveLedereForSykmeldt(
+    fun alleLedereForSykmeldt(
         ansattFnr: String,
     ): List<NarmesteLederRelasjonDTO> {
 
@@ -42,7 +42,6 @@ class NarmesteLederClient(
             val relasjoner = response.body ?: emptyArray()
 
             return relasjoner
-                .filter { it.status == NarmesteLederRelasjonStatus.INNMELDT_AKTIV.name }
                 .filter { it.arbeidstakerPersonIdentNumber == ansattFnr }
                 .distinctBy { it.narmesteLederPersonIdentNumber }
         } catch (e: RestClientResponseException) {
@@ -54,21 +53,20 @@ class NarmesteLederClient(
         }
     }
 
-    @Cacheable(value = ["aktive_ansatte"], key = "#narmesteLederIdent", condition = "#narmesteLederIdent != null")
+    @Cacheable(value = ["aktive_ansatte"], key = "{#ansattFnr, #virksomhetsnummer}", condition = "{#ansattFnr != null, #virksomhetsnummer != null}")
     fun aktivNarmesteLederIVirksomhet(
         ansattFnr: String,
-        narmesteLederIdent: String,
         virksomhetsnummer: String,
     ): NarmesteLederRelasjonDTO? {
         try {
-            val narmesteLederRelasjoner = alleAktiveLedereForSykmeldt(ansattFnr)
+            val narmesteLederRelasjoner = alleLedereForSykmeldt(ansattFnr)
 
             return narmesteLederRelasjoner
-                .filter { it.narmesteLederPersonIdentNumber == narmesteLederIdent }
+                .filter { it.aktivTom == null }
                 .firstOrNull { it.virksomhetsnummer == virksomhetsnummer }
         } catch (e: RestClientResponseException) {
             log.error(
-                "Error while requesting aktive ansatte of leder. Stacktrace: {}",
+                "Error while requesting aktive leder in virksomhet. Stacktrace: {}",
                 e.stackTraceToString()
             )
             return null

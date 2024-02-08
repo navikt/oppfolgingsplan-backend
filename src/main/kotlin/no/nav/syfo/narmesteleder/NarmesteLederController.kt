@@ -53,20 +53,19 @@ class NarmesteLederController @Autowired constructor(
                 .build()
         } else {
             if (!brukertilgangService.tilgangTilOppslattIdent(innloggetIdent, fnr)) {
-                LOG.error("Ikke tilgang til nærmeste ledere: Bruker spør om noen andre enn seg selv eller egne ansatte")
+                LOG.error("Ikke tilgang til nærmeste leder: Bruker spør om noen andre enn seg selv eller egne ansatte")
                 ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .build()
             } else {
-                val narmesteLedere = narmesteLederClient.aktivNarmesteLederIVirksomhet(
+                val aktivLeder = narmesteLederClient.aktivNarmesteLederIVirksomhet(
                     ansattFnr = fnr,
-                    narmesteLederIdent = innloggetIdent,
                     virksomhetsnummer = virksomhetsnummer
                 )
-                if (narmesteLedere != null) {
+                if (aktivLeder != null) {
                     return ResponseEntity
                         .status(HttpStatus.OK)
-                        .body(narmesteLedere.mapToNarmesteLeder())
+                        .body(aktivLeder.mapToNarmesteLeder())
                 } else {
                     return ResponseEntity
                         .status(HttpStatus.NO_CONTENT)
@@ -85,7 +84,7 @@ class NarmesteLederController @Autowired constructor(
             .fnrFromIdportenTokenX()
             .value
 
-        val narmesteLedere = narmesteLederClient.alleAktiveLedereForSykmeldt(ansattFnr = innloggetIdent)
+        val narmesteLedere = narmesteLederClient.alleLedereForSykmeldt(ansattFnr = innloggetIdent)
 
         return if (narmesteLedere.isNotEmpty()) {
             ResponseEntity

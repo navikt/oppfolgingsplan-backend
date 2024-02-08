@@ -11,7 +11,6 @@ import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.wiremock.ListenerMode
 import io.kotest.extensions.wiremock.WireMockListener
-import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -52,7 +51,7 @@ class NarmesteLederClientTest : FunSpec({
         every { mockJwtToken.tokenAsString } returns "heihei"
     }
 
-    test("Henter alle ledere med status INNMELDT_AKTIV") {
+    test("Henter alle ledere uavhengig av status") {
         val aktivLederIBedrift1 = createNarmestelederRelasjon(
             narmesteLederPersonIdentNumber = "123",
             virksomhetsnummer = "999",
@@ -73,10 +72,9 @@ class NarmesteLederClientTest : FunSpec({
             listOf(aktivLederIBedrift1, inaktivLederIBedrift1, aktivLederIBedrift2)
         )
 
-        val alleLedere = narmesteLederClient.alleAktiveLedereForSykmeldt(ansattFnr)
+        val alleLedere = narmesteLederClient.alleLedereForSykmeldt(ansattFnr)
 
-        alleLedere.size shouldBe 2
-        alleLedere shouldContainOnly listOf(aktivLederIBedrift1, aktivLederIBedrift2)
+        alleLedere.size shouldBe 3
     }
 
     test("aktivNarmesteLederIVirksomhet") {
@@ -100,7 +98,7 @@ class NarmesteLederClientTest : FunSpec({
             listOf(aktivLederIBedrift1, inaktivLederIBedrift1, aktivLederIBedrift2)
         )
 
-        val narmesteLederIVirksomhet = narmesteLederClient.aktivNarmesteLederIVirksomhet(ansattFnr, "123", "999")
+        val narmesteLederIVirksomhet = narmesteLederClient.aktivNarmesteLederIVirksomhet(ansattFnr, "999")
 
         narmesteLederIVirksomhet shouldBe aktivLederIBedrift1
     }
