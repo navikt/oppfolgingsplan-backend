@@ -5,7 +5,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.4"
     id("io.gitlab.arturbosch.detekt") version "1.23.5"
     kotlin("jvm") version "1.9.22"
-    kotlin("plugin.spring") version "1.9.21"
+    kotlin("plugin.spring") version "1.9.22"
 }
 
 group = "no.nav.syfo"
