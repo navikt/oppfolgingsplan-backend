@@ -6,8 +6,8 @@ object TokenUtil {
 
     @JvmStatic
     fun getIssuerToken(contextHolder: TokenValidationContextHolder, issuer: String): String {
-        val context = contextHolder.tokenValidationContext
-        return context.getJwtToken(issuer)?.tokenAsString
+        val context = contextHolder.getTokenValidationContext()
+        return context.getJwtToken(issuer)?.encodedToken
             ?: throw TokenValidationException("Klarte ikke hente token fra issuer: $issuer")
     }
 
