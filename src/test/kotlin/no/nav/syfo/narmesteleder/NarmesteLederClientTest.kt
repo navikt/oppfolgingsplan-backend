@@ -42,13 +42,13 @@ class NarmesteLederClientTest : FunSpec({
     listener(WireMockListener(isnarmestelederServer, ListenerMode.PER_TEST))
 
     beforeTest {
-        every { contextHolder.tokenValidationContext } returns mockTokenValidationContext
+        every { contextHolder.getTokenValidationContext() } returns mockTokenValidationContext
         every { mockTokenValidationContext.getClaims(TokenXUtil.TokenXIssuer.TOKENX) } returns mockJwtTokenClaims
         every { mockJwtTokenClaims.getStringClaim("pid") } returns ansattFnr
         every { mockJwtTokenClaims.getStringClaim("client_id") } returns "clientId"
         every { tokenDingsConsumer.exchangeToken(any(), any()) } returns "123abc"
         every { mockTokenValidationContext.getJwtToken(any()) } returns mockJwtToken
-        every { mockJwtToken.tokenAsString } returns "heihei"
+        every { mockJwtToken.encodedToken } returns "heihei"
     }
 
     test("Henter alle ledere uavhengig av status") {

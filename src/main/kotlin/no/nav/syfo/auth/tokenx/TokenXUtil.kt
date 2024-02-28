@@ -12,7 +12,7 @@ object TokenXUtil {
         contextHolder: TokenValidationContextHolder,
         vararg requestedClientId: String,
     ): JwtTokenClaims {
-        val context = contextHolder.tokenValidationContext
+        val context = contextHolder.getTokenValidationContext()
         val claims = context.getClaims(TokenXIssuer.TOKENX)
         val clientId = claims.getStringClaim("client_id")
 
@@ -27,7 +27,7 @@ object TokenXUtil {
     }
 
     fun fnrFromIdportenTokenX(contextHolder: TokenValidationContextHolder): Fodselsnummer {
-        val context = contextHolder.tokenValidationContext
+        val context = contextHolder.getTokenValidationContext()
         val claims = context.getClaims(TokenXIssuer.TOKENX)
         return Fodselsnummer(claims.getStringClaim("pid"))
     }

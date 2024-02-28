@@ -27,7 +27,7 @@ class BrukerTilgangControllerTest : FunSpec({
     val invalidFnr = "123"
 
     beforeTest {
-        every { contextHolder.tokenValidationContext } returns mockTokenValidationContext
+        every { contextHolder.getTokenValidationContext() } returns mockTokenValidationContext
         every { mockTokenValidationContext.getClaims(TokenXUtil.TokenXIssuer.TOKENX) } returns mockJwtTokenClaims
         every { mockJwtTokenClaims.getStringClaim("pid") } returns validFnr
         every { mockJwtTokenClaims.getStringClaim("client_id") } returns "clientId"
