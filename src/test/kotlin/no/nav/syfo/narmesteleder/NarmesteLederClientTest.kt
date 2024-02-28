@@ -48,7 +48,7 @@ class NarmesteLederClientTest : FunSpec({
         every { mockJwtTokenClaims.getStringClaim("client_id") } returns "clientId"
         every { tokenDingsConsumer.exchangeToken(any(), any()) } returns "123abc"
         every { mockTokenValidationContext.getJwtToken(any()) } returns mockJwtToken
-        every { mockJwtToken.tokenAsString } returns "heihei"
+        every { mockJwtToken.encodedToken } returns "heihei"
     }
 
     test("Henter alle ledere uavhengig av status") {
