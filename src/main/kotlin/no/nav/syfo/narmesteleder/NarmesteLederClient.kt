@@ -43,7 +43,6 @@ class NarmesteLederClient(
 
             return relasjoner
                 .filter { it.arbeidstakerPersonIdentNumber == ansattFnr }
-                .distinctBy { it.narmesteLederPersonIdentNumber }
         } catch (e: RestClientResponseException) {
             log.error(
                 "Error while requesting all NarmesteLeder of sykmeldt. Stacktrace: {}",

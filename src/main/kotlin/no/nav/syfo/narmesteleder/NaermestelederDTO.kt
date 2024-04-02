@@ -3,7 +3,7 @@ package no.nav.syfo.narmesteleder
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class NarmesteLeder (
+data class NarmesteLeder(
     val virksomhetsnummer: String,
     val erAktiv: Boolean,
     val aktivFom: LocalDate,
@@ -22,7 +22,7 @@ fun NarmesteLederRelasjonDTO.mapToNarmesteLeder(): NarmesteLeder {
         navn = this.narmesteLederNavn,
         epost = this.narmesteLederEpost,
         tlf = this.narmesteLederTelefonnummer,
-        erAktiv = this.aktivTom == null,
+        erAktiv = this.aktivTom == null || this.aktivTom.isAfter(LocalDate.now().plusDays(1)),
         aktivFom = this.aktivFom,
         aktivTom = this.aktivTom,
         fnr = this.narmesteLederPersonIdentNumber,
