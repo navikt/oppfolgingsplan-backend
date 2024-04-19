@@ -2,10 +2,10 @@ package no.nav.syfo.kontaktinfo
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
-import no.nav.syfo.brukertilgang.BrukertilgangService
 import no.nav.syfo.auth.tokenx.TokenXUtil
 import no.nav.syfo.auth.tokenx.TokenXUtil.TokenXIssuer.TOKENX
 import no.nav.syfo.auth.tokenx.TokenXUtil.fnrFromIdportenTokenX
+import no.nav.syfo.brukertilgang.BrukertilgangService
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.fodselsnummerInvalid
 import org.slf4j.LoggerFactory
@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController
 class KontaktinfoController(
     private val contextHolder: TokenValidationContextHolder,
     private val brukertilgangService: BrukertilgangService,
-    private val krrClient: KrrClient,
     @Value("\${OPPFOLGINGSPLAN_FRONTEND_CLIENT_ID}")
     private val oppfolgingsplanClientId: String,
 ) {
@@ -49,9 +48,7 @@ class KontaktinfoController(
             }
 
             else -> {
-                val kontaktinfo = krrClient.kontaktinformasjon(fnr)
                 ResponseEntity.status(HttpStatus.FORBIDDEN).build()
-//                ResponseEntity.ok(kontaktinfo.toKontaktinfo(fnr))
             }
         }
     }
