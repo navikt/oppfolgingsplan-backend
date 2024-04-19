@@ -50,7 +50,8 @@ class KontaktinfoController(
 
             else -> {
                 val kontaktinfo = krrClient.kontaktinformasjon(fnr)
-                ResponseEntity.ok(kontaktinfo.toKontaktinfo(fnr))
+                ResponseEntity.status(HttpStatus.FORBIDDEN).build()
+//                ResponseEntity.ok(kontaktinfo.toKontaktinfo(fnr))
             }
         }
     }

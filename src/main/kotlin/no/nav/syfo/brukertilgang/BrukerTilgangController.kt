@@ -19,7 +19,7 @@ import org.springframework.web.server.ResponseStatusException
 
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4", "acr=idporten-loa-high"], combineWithOr = true)
-@RequestMapping(value = ["/api/v1/brukertilgang"])
+@RequestMapping(value = ["/api/v1/tilgang"])
 class BrukerTilgangController(
     private val contextHolder: TokenValidationContextHolder,
     private val brukertilgangClient: BrukertilgangClient,
