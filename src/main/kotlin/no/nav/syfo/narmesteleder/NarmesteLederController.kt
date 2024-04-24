@@ -36,6 +36,7 @@ class NarmesteLederController @Autowired constructor(
 
     @ResponseBody
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE], path = ["/virksomhet"])
+    @Suppress("ReturnCount")
     fun getAktivNarmesteLederIVirksomhet(
         @RequestHeader(NAV_PERSONIDENT_HEADER) fnr: String,
         @RequestHeader(ORGNUMMER_HEADER) virksomhetsnummer: String,
