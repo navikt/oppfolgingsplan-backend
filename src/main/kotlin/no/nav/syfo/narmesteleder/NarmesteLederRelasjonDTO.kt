@@ -1,6 +1,7 @@
 package no.nav.syfo.narmesteleder
 
-import java.time.*
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class NarmesteLederRelasjonDTO(
     val uuid: String,

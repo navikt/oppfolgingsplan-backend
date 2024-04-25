@@ -4,7 +4,9 @@ import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import no.nav.syfo.auth.oidc.TokenUtil
 import no.nav.syfo.auth.tokenx.TokenXUtil
 import no.nav.syfo.auth.tokenx.tokendings.TokenDingsConsumer
-import no.nav.syfo.util.*
+import no.nav.syfo.util.NAV_CALL_ID_HEADER
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
+import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
@@ -29,7 +31,6 @@ class NarmesteLederClient(
     fun alleLedereForSykmeldt(
         ansattFnr: String,
     ): List<NarmesteLederRelasjonDTO> {
-
         val issuerToken = TokenUtil.getIssuerToken(contextHolder, TokenXUtil.TokenXIssuer.TOKENX)
         val exchangedToken = tokenDingsConsumer.exchangeToken(issuerToken, targetApp)
 
@@ -52,7 +53,11 @@ class NarmesteLederClient(
         }
     }
 
-    @Cacheable(value = ["aktive_ansatte"], key = "{#ansattFnr, #virksomhetsnummer}", condition = "{#ansattFnr != null, #virksomhetsnummer != null}")
+    @Cacheable(
+        value = ["aktive_ansatte"],
+        key = "{#ansattFnr, #virksomhetsnummer}",
+        condition = "{#ansattFnr != null, #virksomhetsnummer != null}"
+    )
     fun aktivNarmesteLederIVirksomhet(
         ansattFnr: String,
         virksomhetsnummer: String,

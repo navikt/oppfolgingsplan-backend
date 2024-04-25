@@ -23,8 +23,8 @@ import no.nav.syfo.auth.tokenx.tokendings.TokenDingsConsumer
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-const val baseUrl = "http://localhost:9000"
-const val ansattFnr = "12345678910"
+const val BASE_URL = "http://localhost:9000"
+const val ANSATT_FNR = "12345678910"
 
 class NarmesteLederClientTest : FunSpec({
     val tokenDingsConsumer: TokenDingsConsumer = mockk<TokenDingsConsumer>()
@@ -33,7 +33,7 @@ class NarmesteLederClientTest : FunSpec({
     val mockJwtTokenClaims = mockk<JwtTokenClaims>()
     val mockJwtToken = mockk<JwtToken>()
     val narmesteLederClient = NarmesteLederClient(
-        baseUrl = baseUrl,
+        baseUrl = BASE_URL,
         targetApp = "hei",
         tokenDingsConsumer = tokenDingsConsumer,
         contextHolder = contextHolder
@@ -44,7 +44,7 @@ class NarmesteLederClientTest : FunSpec({
     beforeTest {
         every { contextHolder.getTokenValidationContext() } returns mockTokenValidationContext
         every { mockTokenValidationContext.getClaims(TokenXUtil.TokenXIssuer.TOKENX) } returns mockJwtTokenClaims
-        every { mockJwtTokenClaims.getStringClaim("pid") } returns ansattFnr
+        every { mockJwtTokenClaims.getStringClaim("pid") } returns ANSATT_FNR
         every { mockJwtTokenClaims.getStringClaim("client_id") } returns "clientId"
         every { tokenDingsConsumer.exchangeToken(any(), any()) } returns "123abc"
         every { mockTokenValidationContext.getJwtToken(any()) } returns mockJwtToken
@@ -72,7 +72,7 @@ class NarmesteLederClientTest : FunSpec({
             listOf(aktivLederIBedrift1, inaktivLederIBedrift1, aktivLederIBedrift2)
         )
 
-        val alleLedere = narmesteLederClient.alleLedereForSykmeldt(ansattFnr)
+        val alleLedere = narmesteLederClient.alleLedereForSykmeldt(ANSATT_FNR)
 
         alleLedere.size shouldBe 3
     }
@@ -98,7 +98,7 @@ class NarmesteLederClientTest : FunSpec({
             listOf(aktivLederIBedrift1, inaktivLederIBedrift1, aktivLederIBedrift2)
         )
 
-        val narmesteLederIVirksomhet = narmesteLederClient.aktivNarmesteLederIVirksomhet(ansattFnr, "999")
+        val narmesteLederIVirksomhet = narmesteLederClient.aktivNarmesteLederIVirksomhet(ANSATT_FNR, "999")
 
         narmesteLederIVirksomhet shouldBe aktivLederIBedrift1
     }
@@ -134,7 +134,7 @@ fun createNarmestelederRelasjon(
         aktivTom = null,
         timestamp = LocalDateTime.now(),
         virksomhetsnavn = "Hopp",
-        arbeidstakerPersonIdentNumber = ansattFnr,
+        arbeidstakerPersonIdentNumber = ANSATT_FNR,
     )
 }
 
