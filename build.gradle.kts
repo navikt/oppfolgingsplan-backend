@@ -32,7 +32,7 @@ val tokenSupportVersion = "4.1.7"
 val mockkVersion = "1.13.11"
 val kotestVersion = "5.9.0"
 val wiremockVersion = "3.6.0"
-val wiremockKotestExtensionVersion = "3.0.1"
+val wiremockKotestExtensionVersion = "3.1.0"
 val hikariVersion = "5.1.0"
 val logstashLogbackEncoderVersion = "7.4"
 
