@@ -43,6 +43,8 @@ spec:
       rules:
         - application: oppfolgingsplan-frontend
     outbound:
+      external:
+        - host: "pdl-api.dev-fss-pub.nais.io"
       rules:
         - application: digdir-krr-proxy
           namespace: team-rocket
@@ -99,6 +101,10 @@ spec:
       value: http://isnarmesteleder.teamsykefravr
     - name: NARMESTELEDER_CLIENT_ID
       value: dev-gcp:teamsykefravr:isnarmesteleder
+    - name: PDL_CLIENT_ID
+      value: "dev-fss.pdl.pdl-api"
+    - name: PDL_URL
+      value: "https://pdl-api.dev-fss-pub.nais.io/graphql"
   redis:
     - instance: oppfolgingsplan
       access: readwrite

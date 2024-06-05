@@ -23,6 +23,10 @@ spec:
     initialDelay: 30
     periodSeconds: 5
     timeout: 5
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   prometheus:
     enabled: true
     path: /internal/prometheus
@@ -43,6 +47,8 @@ spec:
       rules:
         - application: oppfolgingsplan-frontend
     outbound:
+      external:
+        - host: "pdl-api.prod-fss-pub.nais.io"
       rules:
         - application: digdir-krr-proxy
           namespace: team-rocket
@@ -99,6 +105,10 @@ spec:
       value: http://isnarmesteleder.teamsykefravr
     - name: NARMESTELEDER_CLIENT_ID
       value: prod-gcp:teamsykefravr:isnarmesteleder
+    - name: PDL_CLIENT_ID
+      value: "prod-fss.pdl.pdl-api"
+    - name: PDL_URL
+      value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
   redis:
     - instance: oppfolgingsplan
       access: readwrite
