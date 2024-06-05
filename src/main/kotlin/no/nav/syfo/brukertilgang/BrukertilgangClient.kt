@@ -1,13 +1,14 @@
 package no.nav.syfo.brukertilgang
 
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
-import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.auth.oidc.TokenUtil.getIssuerToken
 import no.nav.syfo.auth.tokenx.TokenXUtil.TokenXIssuer.TOKENX
 import no.nav.syfo.auth.tokenx.tokendings.TokenDingsConsumer
+import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.util.APP_CONSUMER_ID
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.NAV_CONSUMER_ID_HEADER
+import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.createCallId
 import org.slf4j.LoggerFactory
@@ -32,10 +33,10 @@ class BrukertilgangClient(
     fun hasAccessToAnsatt(ansattFnr: String): Boolean {
         val issuerToken = getIssuerToken(contextHolder, TOKENX)
         val exchangedToken = tokenDingsConsumer.exchangeToken(issuerToken, targetApp)
-        val httpEntity = createHttpEntity(exchangedToken)
+        val httpEntity = createHttpEntity(exchangedToken, ansattFnr)
 
         return try {
-            val response = getResponse(httpEntity, ansattFnr)
+            val response = getResponse(httpEntity)
             metrikk.countOutgoingReponses(METRIC_CALL_BRUKERTILGANG, response.statusCode.value())
             response.body!!
         } catch (e: RestClientResponseException) {
@@ -43,21 +44,21 @@ class BrukertilgangClient(
         }
     }
 
-    private fun createHttpEntity(exchangedToken: String): HttpEntity<*> {
+    private fun createHttpEntity(exchangedToken: String, personident: String): HttpEntity<*> {
         val headers = HttpHeaders()
         headers.add(HttpHeaders.AUTHORIZATION, bearerHeader(exchangedToken))
         headers.add(NAV_CALL_ID_HEADER, createCallId())
         headers.add(NAV_CONSUMER_ID_HEADER, APP_CONSUMER_ID)
+        headers.add(NAV_PERSONIDENT_HEADER, personident)
         return HttpEntity<Any>(headers)
     }
 
-    private fun getResponse(httpEntity: HttpEntity<*>, ansattFnr: String): ResponseEntity<Boolean> {
+    private fun getResponse(httpEntity: HttpEntity<*>): ResponseEntity<Boolean> {
         return RestTemplate().exchange(
-            "$baseUrl/api/v2/tilgang/ansatt/{ansattFnr}",
+            "$baseUrl/api/v2/tilgang/ansatt",
             HttpMethod.GET,
             httpEntity,
             Boolean::class.java,
-            ansattFnr,
         )
     }
 
