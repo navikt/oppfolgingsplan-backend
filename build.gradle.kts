@@ -11,6 +11,10 @@ plugins {
 group = "no.nav.syfo"
 version = "0.0.1-SNAPSHOT"
 
+object Versions {
+    const val tokenSupportVersion = "3.2.0"
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_21
 }
@@ -55,8 +59,13 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.springframework.boot:spring-boot-starter-logging")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashLogbackEncoderVersion")
+    implementation("javax.inject:javax.inject:1")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
+
+    testImplementation("junit:junit")
+    testImplementation("no.nav.security:token-validation-spring-test:${Versions.tokenSupportVersion}")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
