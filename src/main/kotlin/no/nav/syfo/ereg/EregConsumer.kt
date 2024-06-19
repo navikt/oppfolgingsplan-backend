@@ -39,7 +39,9 @@ class EregConsumer @Inject constructor(
             return eregResponse
         } catch (e: RestClientResponseException) {
             metric.tellHendelse(METRIC_CALL_EREG_FAIL)
-            val message = "Call to get name Virksomhetsnummer from EREG failed with status: ${e.statusCode.value()} and message: ${e.responseBodyAsString}"
+            val message =
+                "Call to get name Virksomhetsnummer from EREG failed with status:" +
+                        " ${e.statusCode.value()} and message: ${e.responseBodyAsString}"
             LOG.error(message)
             throw e
         }
