@@ -26,22 +26,14 @@ class CacheConfig {
         val cacheConfiguration: MutableMap<String, RedisCacheConfiguration> = HashMap()
 
 
-        var defaultConfig: RedisCacheConfiguration = RedisCacheConfiguration
+        val defaultConfig: RedisCacheConfiguration = RedisCacheConfiguration
             .defaultCacheConfig()
             .entryTtl(Duration.ofHours(1L))
-        // add CACHENAME_EREG_VIRKSOMHETSNAVN to redisCacheConfiguration
         cacheConfiguration[CACHENAME_EREG_VIRKSOMHETSNAVN] = defaultConfig
 
         return RedisCacheManager.builder(RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory))
             .cacheDefaults(defaultConfig)
             .withInitialCacheConfigurations(cacheConfiguration)
             .build()
-        /*return RedisCacheManager.builder(redisConnectionFactory)
-            .cacheDefaults(RedisCacheConfiguration.defaultCacheConfig())
-            .withInitialCacheConfigurations(cacheConfigurations)
-            .build()
-        return RedisCacheManager.builder(RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory))
-            .cacheDefaults(redisCacheConfiguration())
-            .build()*/
     }
 }
