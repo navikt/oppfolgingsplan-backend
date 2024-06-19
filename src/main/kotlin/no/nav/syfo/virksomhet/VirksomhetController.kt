@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4", "acr=idporten-loa-high"], combineWithOr = true)
-@RequestMapping(value = ["/virksomhet/{virksomhetsnummer}"])
+@RequestMapping(value = ["/api/v1/virksomhet/{virksomhetsnummer}"])
 class VirksomhetController @Inject constructor(
     private val contextHolder: TokenValidationContextHolder,
     private val eregConsumer: EregConsumer,
