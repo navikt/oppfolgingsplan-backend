@@ -11,10 +11,6 @@ plugins {
 group = "no.nav.syfo"
 version = "0.0.1-SNAPSHOT"
 
-object Versions {
-    const val tokenSupportVersion = "3.2.0"
-}
-
 java {
     sourceCompatibility = JavaVersion.VERSION_21
 }
@@ -65,7 +61,7 @@ dependencies {
 
 
     testImplementation("junit:junit")
-    testImplementation("no.nav.security:token-validation-spring-test:${Versions.tokenSupportVersion}")
+    testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
