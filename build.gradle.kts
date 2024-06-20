@@ -35,6 +35,8 @@ val wiremockVersion = "3.6.0"
 val wiremockKotestExtensionVersion = "3.1.0"
 val hikariVersion = "5.1.0"
 val logstashLogbackEncoderVersion = "7.4"
+val owaspVersion = "20240325.1"
+val apacheCommonsTextVersion = "1.12.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -46,6 +48,8 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.hibernate.validator:hibernate-validator")
+    implementation("com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:$owaspVersion")
+    implementation("org.apache.commons:commons-text:$apacheCommonsTextVersion")
     implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
@@ -70,7 +74,6 @@ dependencies {
     testImplementation("com.h2database:h2")
     testImplementation("org.wiremock:wiremock-standalone:$wiremockVersion")
     testImplementation("io.kotest.extensions:kotest-extensions-wiremock:$wiremockKotestExtensionVersion")
-
 }
 
 tasks.withType<KotlinCompile> {

@@ -60,6 +60,9 @@ spec:
         - application: isnarmesteleder
           namespace: teamsykefravr
           cluster: prod-gcp
+        - application: istilgangskontroll
+          namespace: teamsykefravr
+          cluster: prod-gcp
   azure:
     application:
       allowAllUsers: true
@@ -112,6 +115,10 @@ spec:
       value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
     - name: EREG_URL
       value: https://ereg-services.prod-fss-pub.nais.io
+    - name: ISTILGANGSKONTROLL_CLIENT_ID
+      value: prod-gcp.teamsykefravr.istilgangskontroll
+    - name: ISTILGANGSKONTROLL_URL
+      value: http://istilgangskontroll.teamsykefravr
   redis:
     - instance: oppfolgingsplan
       access: readwrite
