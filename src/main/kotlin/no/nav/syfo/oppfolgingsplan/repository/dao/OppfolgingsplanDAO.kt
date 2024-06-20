@@ -1,5 +1,6 @@
 package no.nav.syfo.oppfolgingsplan.repository.dao
 
+import no.nav.syfo.exception.OppfolgingsplanNotFoundException
 import no.nav.syfo.oppfolgingsplan.domain.GodkjenningDTO
 import no.nav.syfo.oppfolgingsplan.domain.OppfolgingsplanDTO
 import no.nav.syfo.oppfolgingsplan.repository.domain.POppfoelgingsdialog
@@ -53,13 +54,15 @@ class OppfolgingsplanDAO(
             .addValue("sist_endret_av_fnr", oppfolgingsplan.sistEndretAvFnr)
 
         namedParameterJdbcTemplate.update(
-            "insert into oppfoelgingsdialog " +
-                "(oppfoelgingsdialog_id, uuid, aktoer_id, virksomhetsnummer, opprettet_av, created, arbeidsgiver_sist_innlogget, " +
-                "sykmeldt_sist_innlogget, sist_endret_av, sist_endret, arbeidsgiver_sist_aksessert, sykmeldt_sist_aksessert, " +
-                "arbeidsgiver_sist_endret, sykmeldt_sist_endret, samtykke_sykmeldt, samtykke_arbeidsgiver, sm_fnr, opprettet_av_fnr, sist_endret_av_fnr) " +
-                "values(:oppfoelgingsdialog_id, :uuid, :aktoer_id, :virksomhetsnummer, :opprettet_av, :created, :arbeidsgiver_sist_innlogget, " +
-                ":sykmeldt_sist_innlogget, :sist_endret_av, :sist_endret, :arbeidsgiver_sist_aksessert, :sykmeldt_sist_aksessert, " +
-                ":arbeidsgiver_sist_endret, :sykmeldt_sist_endret, :samtykke_sykmeldt, :samtykke_arbeidsgiver, :sm_fnr, :opprettet_av_fnr, :sist_endret_av_fnr)",
+            """
+                insert into oppfoelgingsdialog 
+                (oppfoelgingsdialog_id, uuid, aktoer_id, virksomhetsnummer, opprettet_av, created, arbeidsgiver_sist_innlogget, 
+                sykmeldt_sist_innlogget, sist_endret_av, sist_endret, arbeidsgiver_sist_aksessert, sykmeldt_sist_aksessert, 
+                arbeidsgiver_sist_endret, sykmeldt_sist_endret, samtykke_sykmeldt, samtykke_arbeidsgiver, sm_fnr, opprettet_av_fnr, sist_endret_av_fnr) 
+                values(:oppfoelgingsdialog_id, :uuid, :aktoer_id, :virksomhetsnummer, :opprettet_av, :created, :arbeidsgiver_sist_innlogget, 
+                :sykmeldt_sist_innlogget, :sist_endret_av, :sist_endret, :arbeidsgiver_sist_aksessert, :sykmeldt_sist_aksessert, 
+                :arbeidsgiver_sist_endret, :sykmeldt_sist_endret, :samtykke_sykmeldt, :samtykke_arbeidsgiver, :sm_fnr, :opprettet_av_fnr, :sist_endret_av_fnr)
+                """,
             namedParameters
         )
 
@@ -125,11 +128,12 @@ class OppfolgingsplanDAO(
 
     fun sistEndretAv(oppfoelgingsplanId: Long, innloggetAktoerId: String) {
         val oppfolgingsplan = finnOppfolgingsplanMedId(oppfoelgingsplanId)
-            ?: throw RuntimeException("Could not find oppfolgingsplan")
+            ?: throw OppfolgingsplanNotFoundException("Could not find oppfolgingsplan")
 
         if (erArbeidstakeren(oppfolgingsplan, innloggetAktoerId)) {
             jdbcTemplate.update(
-                "update oppfoelgingsdialog set sykmeldt_sist_endret = ?, sist_endret = ?, sist_endret_av = ? where oppfoelgingsdialog_id = ?",
+                "update oppfoelgingsdialog set sykmeldt_sist_endret = ?, " +
+                    "sist_endret = ?, sist_endret_av = ? where oppfoelgingsdialog_id = ?",
                 convert(LocalDateTime.now()),
                 convert(LocalDateTime.now()),
                 innloggetAktoerId,
@@ -137,7 +141,8 @@ class OppfolgingsplanDAO(
             )
         } else {
             jdbcTemplate.update(
-                "update oppfoelgingsdialog set arbeidsgiver_sist_endret = ?, sist_endret = ?, sist_endret_av = ? where oppfoelgingsdialog_id = ?",
+                "update oppfoelgingsdialog set arbeidsgiver_sist_endret = ?, " +
+                    "sist_endret = ?, sist_endret_av = ? where oppfoelgingsdialog_id = ?",
                 convert(LocalDateTime.now()),
                 convert(LocalDateTime.now()),
                 innloggetAktoerId,

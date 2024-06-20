@@ -9,7 +9,6 @@ import org.springframework.data.redis.connection.lettuce.LettuceClientConfigurat
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import java.net.URI
 
-
 @Configuration
 class RedisConfig {
     @Bean
@@ -24,7 +23,8 @@ class RedisConfig {
                 setUsername(username)
                 setPassword(password)
                 database = redisURI.database
-            }, LettuceClientConfiguration.builder().apply {
+            },
+            LettuceClientConfiguration.builder().apply {
                 if (redisURI.isSsl) {
                     useSsl()
                 }

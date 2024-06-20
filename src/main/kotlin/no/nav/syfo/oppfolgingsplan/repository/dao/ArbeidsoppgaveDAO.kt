@@ -38,6 +38,7 @@ class ArbeidsoppgaveDAO(
         )
     }
 
+    @Suppress("LongMethod")
     fun create(arbeidsoppgave: ArbeidsoppgaveDTO): ArbeidsoppgaveDTO {
         val arbeidsoppgaveId =
             jdbcTemplate.queryForObject("SELECT NEXTVAL('ARBEIDSOPPGAVE_ID_SEQ')", Long::class.java)!!

@@ -28,7 +28,7 @@ fun finnKanIkkeGjennomfoeresArbeidsoppgaver(arbeidsoppgaveListe: List<Arbeidsopp
     return arbeidsoppgaveListe.filter { KAN_IKKE.name == it.gjennomfoering?.gjennomfoeringStatus?.name }
 }
 
-fun finnKanGjennomfoeresMedTilretteleggingArbeidsoppgaver(arbeidsoppgaveListe: List<ArbeidsoppgaveDTO>): List<ArbeidsoppgaveDTO> {
+fun finnKanGjennomfoeresMedTilrettelegging(arbeidsoppgaveListe: List<ArbeidsoppgaveDTO>): List<ArbeidsoppgaveDTO> {
     return arbeidsoppgaveListe.filter { TILRETTELEGGING.name == it.gjennomfoering?.gjennomfoeringStatus?.name }
 }
 
@@ -109,12 +109,14 @@ fun eksisterendeArbeidsoppgaveHoererTilDialog(
 }
 
 fun kanEndreElement(innloggetAktoerId: String, arbeidstakerAktoerId: String, opprettetAvAktoerId: String): Boolean {
-    if (opprettetAvAktoerId == innloggetAktoerId) {
-        return true
+    return when {
+        opprettetAvAktoerId == innloggetAktoerId -> {
+            true
+        }
+        // Hvis tidligere nærmeste leder har opprettet elementet, skal ny nærmeste leder kunne endre det
+        innloggetAktoerId != arbeidstakerAktoerId && opprettetAvAktoerId != arbeidstakerAktoerId -> {
+            true
+        }
+        else -> false
     }
-    // Hvis tidligere nærmeste leder har opprettet elementet, skal ny nærmeste leder kunne endre det
-    if (innloggetAktoerId != arbeidstakerAktoerId && opprettetAvAktoerId != arbeidstakerAktoerId) {
-        return true
-    }
-    return false
 }

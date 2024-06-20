@@ -47,9 +47,12 @@ class GodkjenningerDAO(
             .addValue("del_med_nav", godkjenning.delMedNav)
             .addValue("created", convert(LocalDateTime.now()))
         namedParameterJdbcTemplate.update(
-            "insert into godkjenning " +
-                "(godkjenning_id, oppfoelgingsdialog_id, aktoer_id, godkjent, beskrivelse, fom, tom, evalueres, del_med_nav, created) values" +
-                "(:godkjenning_id, :oppfoelgingsdialog_id, :aktoer_id, :godkjent, :beskrivelse, :fom, :tom, :evalueres, :del_med_nav, :created)",
+            """
+                insert into godkjenning 
+                (godkjenning_id, oppfoelgingsdialog_id, aktoer_id, godkjent, beskrivelse, fom, tom, evalueres, del_med_nav, created) 
+                values(:godkjenning_id, :oppfoelgingsdialog_id, :aktoer_id, :godkjent, 
+                :beskrivelse, :fom, :tom, :evalueres, :del_med_nav, :created)
+                """,
             namedParameters
         )
     }

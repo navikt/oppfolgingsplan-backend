@@ -58,11 +58,13 @@ class GodkjentplanDAO(
             .addValue("delt_med_nav_tidspunkt", convert(godkjentPlan.deltMedNAVTidspunkt))
             .addValue("delt_med_fastlege", false)
         namedParameterJdbcTemplate.update(
-            "INSERT INTO godkjentplan " +
-                "(godkjentplan_id, oppfoelgingsdialog_id, dokument_uuid, created, fom, tom, evalueres, tvungen_godkjenning, " +
-                "delt_med_nav, delt_med_nav_tidspunkt, delt_med_fastlege) " +
-                "VALUES(:godkjentplan_id, :oppfoelgingsdialog_id, :dokument_uuid, :created, :fom, :tom, :evalueres, :tvungen_godkjenning, " +
-                ":delt_med_nav, :delt_med_nav_tidspunkt, :delt_med_fastlege)",
+            """
+                INSERT INTO godkjentplan 
+                (godkjentplan_id, oppfoelgingsdialog_id, dokument_uuid, created, fom, tom, evalueres, tvungen_godkjenning, 
+                delt_med_nav, delt_med_nav_tidspunkt, delt_med_fastlege) 
+                VALUES(:godkjentplan_id, :oppfoelgingsdialog_id, :dokument_uuid, :created, :fom, :tom, :evalueres, :tvungen_godkjenning, 
+                :delt_med_nav, :delt_med_nav_tidspunkt, :delt_med_fastlege)
+                """,
             namedParameters
         )
         return godkjentPlan.copy(id = id)
@@ -102,7 +104,8 @@ class GodkjentplanDAO(
 
     fun delMedFastlege(oppfolgingsplanId: Long) {
         jdbcTemplate.update(
-            "UPDATE godkjentplan SET delt_med_fastlege = 1, delt_med_fastlege_tidspunkt = ? WHERE oppfoelgingsdialog_id = ?",
+            "UPDATE godkjentplan SET delt_med_fastlege = 1, " +
+                "delt_med_fastlege_tidspunkt = ? WHERE oppfoelgingsdialog_id = ?",
             convert(LocalDateTime.now()),
             oppfolgingsplanId
         )

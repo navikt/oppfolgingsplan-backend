@@ -1,5 +1,6 @@
 package no.nav.syfo.oppfolgingsplan.repository.dao
 
+import no.nav.syfo.exception.TiltakNotFoundException
 import no.nav.syfo.oppfolgingsplan.domain.TiltakDTO
 import no.nav.syfo.oppfolgingsplan.repository.domain.PTiltak
 import no.nav.syfo.oppfolgingsplan.repository.domain.toTiltakDTO
@@ -42,7 +43,7 @@ class TiltakDAO(
         if (pTiltak != null) {
             return pTiltak.toTiltakDTO(kommentarDAO.finnKommentarerByTiltakId(pTiltak.id))
         } else {
-            throw RuntimeException("No Tiltak was found in database with given ID")
+            throw TiltakNotFoundException("No Tiltak was found in database with given ID")
         }
     }
 
@@ -67,10 +68,12 @@ class TiltakDAO(
             .addValue("status", tiltak.status)
             .addValue("gjennomfoering", SqlLobValue(DbUtil.sanitizeUserInput(tiltak.gjennomfoering)), Types.CLOB)
         namedParameterJdbcTemplate.update(
-            "INSERT INTO tiltak (tiltak_id, oppfoelgingsdialog_id, navn, fom, tom, beskrivelse, beskrivelse_ikke_aktuelt, " +
-                "opprettet_av, sist_endret_av, opprettet_dato, sist_endret_dato, status, gjennomfoering ) " +
-                "VALUES(:tiltak_id, :oppfoelgingsdialog_id, :navn, :fom, :tom, :beskrivelse, :beskrivelse_ikke_aktuelt, " +
-                ":opprettet_av, :sist_endret_av, :opprettet_dato, :sist_endret_dato, :status, :gjennomfoering)",
+            """
+                INSERT INTO tiltak (tiltak_id, oppfoelgingsdialog_id, navn, fom, tom, beskrivelse, beskrivelse_ikke_aktuelt, 
+                opprettet_av, sist_endret_av, opprettet_dato, sist_endret_dato, status, gjennomfoering ) 
+                VALUES(:tiltak_id, :oppfoelgingsdialog_id, :navn, :fom, :tom, :beskrivelse, :beskrivelse_ikke_aktuelt, 
+                :opprettet_av, :sist_endret_av, :opprettet_dato, :sist_endret_dato, :status, :gjennomfoering)
+                """,
             namedParameters
         )
         return tiltak.copy(id = id)
@@ -93,9 +96,11 @@ class TiltakDAO(
             .addValue("status", tiltak.status)
             .addValue("gjennomfoering", SqlLobValue(DbUtil.sanitizeUserInput(tiltak.gjennomfoering)), Types.CLOB)
         namedParameterJdbcTemplate.update(
-            "UPDATE tiltak SET navn = :navn, fom = :fom, tom = :tom, beskrivelse = :beskrivelse, beskrivelse_ikke_aktuelt = :beskrivelse_ikke_aktuelt, " +
-                "sist_endret_av = :sist_endret_av, sist_endret_dato = :sist_endret_dato, status = :status, gjennomfoering = :gjennomfoering WHERE " +
-                "tiltak_id = :tiltak_id",
+            """
+                UPDATE tiltak SET navn = :navn, fom = :fom, tom = :tom, beskrivelse = :beskrivelse, beskrivelse_ikke_aktuelt = :beskrivelse_ikke_aktuelt, 
+                sist_endret_av = :sist_endret_av, sist_endret_dato = :sist_endret_dato, status = :status, gjennomfoering = :gjennomfoering WHERE 
+                tiltak_id = :tiltak_id
+                """,
             namedParameters
         )
         return tiltak

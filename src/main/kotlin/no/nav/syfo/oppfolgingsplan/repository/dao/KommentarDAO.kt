@@ -28,7 +28,7 @@ class KommentarDAO(
         if (pKommentar != null) {
             return pKommentar.toKommentarDTO()
         } else {
-            throw RuntimeException("No Kommentar was found in database with given ID")
+            throw KommentarNotFoundException("No Kommentar was found in database with given ID")
         }
     }
 
@@ -56,8 +56,11 @@ class KommentarDAO(
             .addValue("opprettet_av", kommentar.opprettetAvAktoerId)
             .addValue("opprettet_dato", DbUtil.convert(LocalDateTime.now()))
         namedParameterJdbcTemplate.update(
-            "INSERT INTO kommentar (kommentar_id, tiltak_id, tekst, sist_endret_av, sist_endret_dato, opprettet_av, opprettet_dato) " +
-                "VALUES(:kommentar_id, :tiltak_id, :tekst, :sist_endret_av, :sist_endret_dato, :opprettet_av, :opprettet_dato)",
+            """
+                INSERT INTO kommentar 
+                (kommentar_id, tiltak_id, tekst, sist_endret_av, sist_endret_dato, opprettet_av, opprettet_dato) 
+                VALUES(:kommentar_id, :tiltak_id, :tekst, :sist_endret_av, :sist_endret_dato, :opprettet_av, :opprettet_dato)
+                """,
             namedParameters
         )
         return kommentar.copy(id = id)
@@ -97,4 +100,6 @@ class KommentarDAO(
             return pKommentar
         }
     }
+
+    class KommentarNotFoundException(message: String) : Exception(message)
 }
