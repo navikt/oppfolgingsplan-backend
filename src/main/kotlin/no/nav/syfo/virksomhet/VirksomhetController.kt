@@ -3,9 +3,10 @@ package no.nav.syfo.virksomhet
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import no.nav.syfo.auth.tokenx.TokenXUtil.TokenXIssuer.TOKENX
-import no.nav.syfo.ereg.EregConsumer
+import no.nav.syfo.ereg.EregClient
 import no.nav.syfo.domain.Virksomhet
 import no.nav.syfo.auth.tokenx.TokenXUtil
+import no.nav.syfo.domain.Virksomhetsnummer
 import no.nav.syfo.util.virksomhetsnummerInvalid
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
@@ -23,7 +24,7 @@ import javax.inject.Inject
 @RequestMapping(value = ["/api/v1/virksomhet/{virksomhetsnummer}"])
 class VirksomhetController @Inject constructor(
     private val contextHolder: TokenValidationContextHolder,
-    private val eregConsumer: EregConsumer,
+    private val eregClient: EregClient,
     @Value("\${oppfolgingsplan.frontend.client.id}")
     private val oppfolgingsplanClientId: String,
 ) {
@@ -33,17 +34,23 @@ class VirksomhetController @Inject constructor(
     ): ResponseEntity<Virksomhet> {
         TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
 
-        if (virksomhetsnummerInvalid(virksomhetsnummer)) {
-            return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).build()
-        }
+        val vikrsomhetsnummerAsObject = Virksomhetsnummer(virksomhetsnummer)
 
-        return ResponseEntity
-            .status(HttpStatus.OK)
-            .body(
-                Virksomhet(
-                    virksomhetsnummer = virksomhetsnummer,
-                    navn = eregConsumer.virksomhetsnavn(virksomhetsnummer),
-                ),
-            )
+        return when {
+            virksomhetsnummerInvalid(vikrsomhetsnummerAsObject.value) -> {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+            }
+
+            else -> {
+                ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(
+                        Virksomhet(
+                            virksomhetsnummer = vikrsomhetsnummerAsObject.value,
+                            navn = eregClient.virksomhetsnavn(virksomhetsnummer),
+                        ),
+                    )
+            }
+        }
     }
 }

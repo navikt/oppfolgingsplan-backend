@@ -20,8 +20,8 @@ import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.RestTemplate
 
 @Service
-class EregConsumer @Inject constructor(
-    @Value("\${ereg.baseurl}") private val baseUrl: String,
+class EregClient @Inject constructor(
+    @Value("\${ereg.url}") private val baseUrl: String,
     private val metric: Metrikk,
     @param:Qualifier("scheduler") private val restTemplate: RestTemplate,
 ) {
@@ -57,7 +57,7 @@ class EregConsumer @Inject constructor(
     }
 
     private fun getEregUrl(): String {
-        return "$baseUrl/ereg/api/v1/organisasjon/{virksomhetsnummer}"
+        return "$baseUrl/ereg/api/v2/organisasjon/{virksomhetsnummer}"
     }
 
     private fun entity(): HttpEntity<String> {
@@ -69,7 +69,7 @@ class EregConsumer @Inject constructor(
     }
 
     companion object {
-        private val LOG = LoggerFactory.getLogger(EregConsumer::class.java)
+        private val LOG = LoggerFactory.getLogger(EregClient::class.java)
 
         private const val METRIC_CALL_EREG_SUCCESS = "call_ereg_success"
         private const val METRIC_CALL_EREG_FAIL = "call_ereg_fail"

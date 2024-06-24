@@ -8,7 +8,7 @@ import no.nav.security.token.support.core.context.TokenValidationContext
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import no.nav.security.token.support.core.jwt.JwtTokenClaims
 import no.nav.syfo.domain.Virksomhet
-import no.nav.syfo.ereg.EregConsumer
+import no.nav.syfo.ereg.EregClient
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER
 import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus
@@ -19,13 +19,13 @@ class VirksomhetControllerTest : FunSpec({
     val mockTokenValidationContext = mockk<TokenValidationContext>()
     val mockJwtTokenClaims = mockk<JwtTokenClaims>()
 
-    val eregConsumer = mockk<EregConsumer>()
+    val eregClient = mockk<EregClient>()
     val virksomhetsNavn = "Tull og fanteri AS"
     val virksomhet = Virksomhet(VIRKSOMHETSNUMMER, virksomhetsNavn)
 
     val virksomhetController = VirksomhetController(
         contextHolder = contextHolder,
-        eregConsumer = eregConsumer,
+        eregClient = eregClient,
         oppfolgingsplanClientId = "123456789"
     )
 
@@ -33,7 +33,7 @@ class VirksomhetControllerTest : FunSpec({
         every { contextHolder.getTokenValidationContext() } returns mockTokenValidationContext
         every { mockTokenValidationContext.getClaims("tokenx") } returns mockJwtTokenClaims
         every { mockJwtTokenClaims.getStringClaim("client_id") } returns "123456789"
-        every { eregConsumer.virksomhetsnavn(VIRKSOMHETSNUMMER) } returns virksomhetsNavn
+        every { eregClient.virksomhetsnavn(VIRKSOMHETSNUMMER) } returns virksomhetsNavn
     }
 
     test("should return virksomhet with valid virksomhetsnummer") {
@@ -48,7 +48,7 @@ class VirksomhetControllerTest : FunSpec({
     test("should return 418 status code with invalid virksomhetsnummer") {
         val res: ResponseEntity<Virksomhet> = virksomhetController.getVirksomhet("12345678")
 
-        res.statusCode shouldBe HttpStatus.I_AM_A_TEAPOT
+        res.statusCode shouldBe HttpStatus.BAD_REQUEST
         res.body shouldBe null
     }
 })
