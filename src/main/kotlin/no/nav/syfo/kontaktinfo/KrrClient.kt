@@ -7,7 +7,6 @@ import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -25,7 +24,6 @@ class KrrClient @Autowired constructor(
     @Value("\${krr.scope}") private val krrScope: String,
     @Value("\${krr.url}") val krrUrl: String,
 ) {
-    @Cacheable(cacheNames = ["krr_fnr"], key = "#fnr", condition = "#fnr != null")
     fun kontaktinformasjon(fnr: String): DigitalKontaktinfo {
         val accessToken = "Bearer ${azureAdTokenConsumer.getSystemToken(krrScope)}"
         val response = RestTemplate().exchange(

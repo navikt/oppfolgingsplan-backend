@@ -1,16 +1,13 @@
 package no.nav.syfo.ereg
 
 import javax.inject.Inject
-import no.nav.syfo.config.CacheConfig
 import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.util.APP_CONSUMER_ID
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.NAV_CONSUMER_ID_HEADER
 import no.nav.syfo.util.createCallId
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -23,11 +20,10 @@ import org.springframework.web.client.RestTemplate
 class EregClient @Inject constructor(
     @Value("\${ereg.url}") private val baseUrl: String,
     private val metric: Metrikk,
-    @param:Qualifier("scheduler") private val restTemplate: RestTemplate,
 ) {
     fun eregResponse(virksomhetsnummer: String): EregOrganisasjonResponse {
         try {
-            val response = restTemplate.exchange(
+            val response = RestTemplate().exchange(
                 getEregUrl(),
                 HttpMethod.GET,
                 entity(),
@@ -47,11 +43,6 @@ class EregClient @Inject constructor(
         }
     }
 
-    @Cacheable(
-        value = [CacheConfig.CACHENAME_EREG_VIRKSOMHETSNAVN],
-        key = "#virksomhetsnummer",
-        condition = "#virksomhetsnummer != null",
-    )
     fun virksomhetsnavn(virksomhetsnummer: String): String {
         return eregResponse(virksomhetsnummer).navn()
     }

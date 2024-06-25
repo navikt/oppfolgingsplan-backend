@@ -9,7 +9,6 @@ import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -27,7 +26,6 @@ class NarmesteLederClient(
     private val tokenDingsConsumer: TokenDingsConsumer,
     private val contextHolder: TokenValidationContextHolder,
 ) {
-    @Cacheable(value = ["aktive_ledere"], key = "#ansattFnr", condition = "#ansattFnr != null")
     fun alleLedereForSykmeldt(
         ansattFnr: String,
     ): List<NarmesteLederRelasjonDTO> {
@@ -53,11 +51,6 @@ class NarmesteLederClient(
         }
     }
 
-    @Cacheable(
-        value = ["aktive_ansatte"],
-        key = "{#ansattFnr, #virksomhetsnummer}",
-        condition = "{#ansattFnr != null, #virksomhetsnummer != null}"
-    )
     fun aktivNarmesteLederIVirksomhet(
         ansattFnr: String,
         virksomhetsnummer: String,
