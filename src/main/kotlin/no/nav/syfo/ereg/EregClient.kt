@@ -42,7 +42,11 @@ class EregClient @Inject constructor(
             throw e
         }
     }
-
+    /*@Cacheable(
+        value = [CacheConfig.CACHENAME_EREG_VIRKSOMHETSNAVN],
+        key = "#virksomhetsnummer",
+        condition = "#virksomhetsnummer != null",
+    )*/
     fun virksomhetsnavn(virksomhetsnummer: String): String {
         return eregResponse(virksomhetsnummer).navn()
     }
