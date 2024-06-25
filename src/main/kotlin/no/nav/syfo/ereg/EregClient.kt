@@ -8,6 +8,7 @@ import no.nav.syfo.util.NAV_CONSUMER_ID_HEADER
 import no.nav.syfo.util.createCallId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -42,11 +43,11 @@ class EregClient @Inject constructor(
             throw e
         }
     }
-    /*@Cacheable(
-        value = [CacheConfig.CACHENAME_EREG_VIRKSOMHETSNAVN],
+    @Cacheable(
+        value = ["ereg_virksomhetsnavn"],
         key = "#virksomhetsnummer",
         condition = "#virksomhetsnummer != null",
-    )*/
+    )
     fun virksomhetsnavn(virksomhetsnummer: String): String {
         return eregResponse(virksomhetsnummer).navn()
     }
