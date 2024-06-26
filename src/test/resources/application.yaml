@@ -55,6 +55,7 @@ azure.openid.config.token.endpoint: "http://azure"
 azure.app.client.id: 'client.id'
 azure.app.client.secret: 'client.secret'
 security.token.service.rest.url: "http://security-token-service.url"
+ereg.url: "http://ereg"
 
 krr.url: "http://krr.url"
 krr.scope: "krr.scope"

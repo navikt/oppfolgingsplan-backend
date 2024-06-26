@@ -49,6 +49,7 @@ spec:
     outbound:
       external:
         - host: "pdl-api.prod-fss-pub.nais.io"
+        - host: "ereg-services.prod-fss-pub.nais.io"
       rules:
         - application: digdir-krr-proxy
           namespace: team-rocket
@@ -109,6 +110,8 @@ spec:
       value: "prod-fss.pdl.pdl-api"
     - name: PDL_URL
       value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
+    - name: EREG_URL
+      value: https://ereg-services.prod-fss-pub.nais.io
   redis:
     - instance: oppfolgingsplan
       access: readwrite

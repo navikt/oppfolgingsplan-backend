@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service
 class BrukertilgangService @Autowired constructor(
     private var brukertilgangClient: BrukertilgangClient
 ) {
-
     @Cacheable(
         cacheNames = ["tilgangtilident"],
         key = "#innloggetIdent.concat(#oppslaattFnr)",

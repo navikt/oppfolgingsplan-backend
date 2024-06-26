@@ -26,6 +26,10 @@ spec:
   prometheus:
     enabled: true
     path: /internal/prometheus
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   ingresses:
     - "https://oppfolgingsplan-backend.intern.dev.nav.no"
   resources:
@@ -45,6 +49,7 @@ spec:
     outbound:
       external:
         - host: "pdl-api.dev-fss-pub.nais.io"
+        - host: "ereg-services-q1.dev-fss-pub.nais.io"
       rules:
         - application: digdir-krr-proxy
           namespace: team-rocket
@@ -105,6 +110,8 @@ spec:
       value: "dev-fss.pdl.pdl-api"
     - name: PDL_URL
       value: "https://pdl-api.dev-fss-pub.nais.io/graphql"
+    - name: EREG_URL
+      value: https://ereg-services-q1.dev-fss-pub.nais.io
   redis:
     - instance: oppfolgingsplan
       access: readwrite
