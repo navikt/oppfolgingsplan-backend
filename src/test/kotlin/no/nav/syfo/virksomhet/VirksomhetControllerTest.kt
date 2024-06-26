@@ -45,8 +45,15 @@ class VirksomhetControllerTest : FunSpec({
         body?.navn shouldBe virksomhet.navn
     }
 
-    test("should return 418 status code with invalid virksomhetsnummer") {
+    test("should return 400 status code with invalid virksomhetsnummer") {
         val res: ResponseEntity<Virksomhet> = virksomhetController.getVirksomhet("12345678")
+
+        res.statusCode shouldBe HttpStatus.BAD_REQUEST
+        res.body shouldBe null
+    }
+
+    test("should return 400 status code with invalid contains numeric virksomhetsnummer") {
+        val res: ResponseEntity<Virksomhet> = virksomhetController.getVirksomhet("a12345678")
 
         res.statusCode shouldBe HttpStatus.BAD_REQUEST
         res.body shouldBe null

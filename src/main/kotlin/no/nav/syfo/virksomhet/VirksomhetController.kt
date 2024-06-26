@@ -16,13 +16,12 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import javax.inject.Inject
 
 
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4", "acr=idporten-loa-high"], combineWithOr = true)
 @RequestMapping(value = ["/api/v1/virksomhet/{virksomhetsnummer}"])
-class VirksomhetController @Inject constructor(
+class VirksomhetController (
     private val contextHolder: TokenValidationContextHolder,
     private val eregClient: EregClient,
     @Value("\${oppfolgingsplan.frontend.client.id}")
@@ -34,10 +33,10 @@ class VirksomhetController @Inject constructor(
     ): ResponseEntity<Virksomhet> {
         TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
 
-        val vikrsomhetsnummerAsObject = Virksomhetsnummer(virksomhetsnummer)
+        val virksomhetsnummerAsObject = Virksomhetsnummer(virksomhetsnummer)
 
         return when {
-            virksomhetsnummerInvalid(vikrsomhetsnummerAsObject.value) -> {
+            virksomhetsnummerInvalid(virksomhetsnummerAsObject.value) -> {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
             }
 
@@ -46,7 +45,7 @@ class VirksomhetController @Inject constructor(
                     .status(HttpStatus.OK)
                     .body(
                         Virksomhet(
-                            virksomhetsnummer = vikrsomhetsnummerAsObject.value,
+                            virksomhetsnummer = virksomhetsnummerAsObject.value,
                             navn = eregClient.virksomhetsnavn(virksomhetsnummer),
                         ),
                     )

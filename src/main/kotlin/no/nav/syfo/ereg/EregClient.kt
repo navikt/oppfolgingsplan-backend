@@ -1,6 +1,5 @@
 package no.nav.syfo.ereg
 
-import javax.inject.Inject
 import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.util.APP_CONSUMER_ID
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
@@ -18,7 +17,7 @@ import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.RestTemplate
 
 @Service
-class EregClient @Inject constructor(
+class EregClient (
     @Value("\${ereg.url}") private val baseUrl: String,
     private val metric: Metrikk,
 ) {

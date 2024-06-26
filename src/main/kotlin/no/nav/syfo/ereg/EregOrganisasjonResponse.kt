@@ -10,13 +10,13 @@ data class EregOrganisasjonResponse(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class EregOrganisasjonNavn(
         val navnelinje1: String,
-        val redigertnavn: String?
+        val sammensattnavn: String?
 )
 
 fun EregOrganisasjonResponse.navn(): String {
     return this.navn.let {
-        if (it.redigertnavn?.isNotEmpty() == true) {
-            it.redigertnavn
+        if (it.sammensattnavn?.isNotEmpty() == true) {
+            it.sammensattnavn
         } else {
             it.navnelinje1
         }
