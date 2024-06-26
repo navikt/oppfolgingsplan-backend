@@ -1,10 +1,10 @@
 package no.nav.syfo.domain
 
 data class Virksomhetsnummer(val value: String) {
-    private val nineDigits = Regex("^d{9}\$")
+    private val nineDigits = Regex("^\\d{9}$")
 
     init {
-        require(!nineDigits.matches(value)) {
+        require(nineDigits.matches(value)) {
             "Value is not a valid Virksomhetsnummer"
         }
     }

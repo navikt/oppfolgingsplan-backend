@@ -7,7 +7,6 @@ import no.nav.syfo.ereg.EregClient
 import no.nav.syfo.domain.Virksomhet
 import no.nav.syfo.auth.tokenx.TokenXUtil
 import no.nav.syfo.domain.Virksomhetsnummer
-import no.nav.syfo.util.virksomhetsnummerInvalid
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -21,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4", "acr=idporten-loa-high"], combineWithOr = true)
 @RequestMapping(value = ["/api/v1/virksomhet/{virksomhetsnummer}"])
-class VirksomhetController (
+class VirksomhetController(
     private val contextHolder: TokenValidationContextHolder,
     private val eregClient: EregClient,
     @Value("\${oppfolgingsplan.frontend.client.id}")
@@ -33,23 +32,20 @@ class VirksomhetController (
     ): ResponseEntity<Virksomhet> {
         TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
 
-        val virksomhetsnummerAsObject = Virksomhetsnummer(virksomhetsnummer)
-
-        return when {
-            virksomhetsnummerInvalid(virksomhetsnummerAsObject.value) -> {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
-            }
-
-            else -> {
-                ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(
-                        Virksomhet(
-                            virksomhetsnummer = virksomhetsnummerAsObject.value,
-                            navn = eregClient.virksomhetsnavn(virksomhetsnummer),
-                        ),
-                    )
-            }
+        return try {
+            val virksomhetsnummerAsObject = Virksomhetsnummer(virksomhetsnummer)
+            ResponseEntity
+                .status(HttpStatus.OK)
+                .body(
+                    Virksomhet(
+                        virksomhetsnummer = virksomhetsnummerAsObject.value,
+                        navn = eregClient.virksomhetsnavn(virksomhetsnummer),
+                    ),
+                )
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+        } catch (e: Exception) {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
         }
     }
 }
