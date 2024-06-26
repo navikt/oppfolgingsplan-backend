@@ -43,6 +43,7 @@ class VirksomhetController(
                     ),
                 )
         } catch (e: IllegalArgumentException) {
+            //handleE
             ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
         } catch (e: Exception) {
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
