@@ -46,9 +46,6 @@ class VirksomhetController(
         } catch (e: IllegalArgumentException) {
             LOG.warn("${e.message}, Invalid virksomhetsnummer: $virksomhetsnummer")
             ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
-        } catch (e: Exception) {
-            LOG.error("Failed to get virksomhet with virksomhetsnummer: $virksomhetsnummer", e)
-            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()
         }
     }
 
