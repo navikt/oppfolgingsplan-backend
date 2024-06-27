@@ -17,7 +17,7 @@ import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.RestTemplate
 
 @Service
-class EregClient (
+class EregClient(
     @Value("\${ereg.url}") private val baseUrl: String,
     private val metric: Metrikk,
 ) {
@@ -37,11 +37,12 @@ class EregClient (
             metric.tellHendelse(METRIC_CALL_EREG_FAIL)
             val message =
                 "Call to get name Virksomhetsnummer from EREG failed with status:" +
-                        " ${e.statusCode.value()} and message: ${e.responseBodyAsString}"
+                    " ${e.statusCode.value()} and message: ${e.responseBodyAsString}"
             LOG.error(message)
             throw e
         }
     }
+
     @Cacheable(
         value = ["ereg_virksomhetsnavn"],
         key = "#virksomhetsnummer",
