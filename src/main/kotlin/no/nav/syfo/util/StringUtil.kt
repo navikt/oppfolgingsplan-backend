@@ -9,5 +9,3 @@ fun fodselsnummerInvalid(fnr: String): Boolean = !fodselsnummerValid(fnr)
 fun String.lowerCapitalize(): String {
     return this.lowercase().replaceFirstChar { it.uppercase() }
 }
-
-

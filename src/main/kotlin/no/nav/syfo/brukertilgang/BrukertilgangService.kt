@@ -17,4 +17,3 @@ class BrukertilgangService @Autowired constructor(
         return oppslaattFnr == innloggetIdent || brukertilgangClient.hasAccessToAnsatt(oppslaattFnr)
     }
 }
-

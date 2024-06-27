@@ -10,8 +10,8 @@ import no.nav.security.token.support.core.jwt.JwtTokenClaims
 import no.nav.syfo.domain.Virksomhet
 import no.nav.syfo.ereg.EregClient
 import no.nav.syfo.testhelper.UserConstants.VIRKSOMHETSNUMMER
-import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 
 class VirksomhetControllerTest : FunSpec({
 
