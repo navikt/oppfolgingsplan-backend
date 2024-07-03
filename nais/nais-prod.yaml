@@ -119,6 +119,8 @@ spec:
       value: prod-gcp.teamsykefravr.istilgangskontroll
     - name: ISTILGANGSKONTROLL_URL
       value: http://istilgangskontroll.teamsykefravr
+    - name: AAREG_SERVICES_URL
+      value: https://aareg-services.intern.nav.no/api
   redis:
     - instance: oppfolgingsplan
       access: readwrite
