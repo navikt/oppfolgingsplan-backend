@@ -5,6 +5,7 @@ import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -66,6 +67,51 @@ class PdlClient(
         headers.set(AUTHORIZATION, bearerHeader(token))
         return HttpEntity(request, headers)
     }
+
+    @Cacheable(cacheNames = ["pdl_fnr"], key = "#aktorId")
+    fun fnr(aktorId: String): String {
+        return hentIdentFraPDL(aktorId, IdentType.FOLKEREGISTERIDENT)
+    }
+
+    fun hentIdentFraPDL(ident: String, identType: IdentType): String {
+        metric.tellHendelse("call_pdl")
+        val gruppe = identType.name
+
+        val query = this::class.java.getResource("/pdl/hentIdenter.graphql").readText().replace("[\n\r]", "")
+        val entity = createRequestEntity(
+            PdlRequest(query, Variables(ident = ident, grupper = gruppe))
+        )
+        try {
+            val pdlIdenter = RestTemplate().exchange(
+                pdlUrl,
+                HttpMethod.POST,
+                entity,
+                object : ParameterizedTypeReference<PdlIdenterResponse>() {}
+            )
+
+            val pdlIdenterReponse = pdlIdenter.body!!
+            if (pdlIdenterReponse.errors != null && pdlIdenterReponse.errors.isNotEmpty()) {
+                metric.tellHendelse("call_pdl_fail")
+                pdlIdenterReponse.errors.forEach {
+                    LOG.error("Error while requesting $gruppe from PersonDataLosningen: ${it.errorMessage()}")
+                }
+                throw RuntimeException("Error while requesting $gruppe from PDL")
+            } else {
+                metric.tellHendelse("call_pdl_success")
+                try {
+                    return pdlIdenterReponse.data?.hentIdenter?.identer?.first()?.ident!!
+                } catch (e: NoSuchElementException) {
+                    LOG.info("Error while requesting $gruppe from PDL. Empty list in hentIdenter response")
+                    throw RuntimeException("Error while requesting $gruppe from PDL")
+                }
+            }
+        } catch (exception: RestClientResponseException) {
+            metric.tellHendelse("call_pdl_fail")
+            LOG.error("Error from PDL with request-url: $pdlUrl", exception)
+            throw exception
+        }
+    }
+
 
     companion object {
         private val LOG = LoggerFactory.getLogger(PdlClient::class.java)

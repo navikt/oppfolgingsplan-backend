@@ -1,8 +1,8 @@
 package no.nav.syfo.aareg
 
 import no.nav.syfo.aareg.exceptions.RestErrorFromAareg
+import no.nav.syfo.auth.azure.AzureAdTokenClient
 import no.nav.syfo.metric.Metrikk
-import no.nav.syfo.sts.StsClient
 import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -19,7 +19,8 @@ import org.springframework.web.client.RestTemplate
 @Service
 class AaregClient(
     private val metrikk: Metrikk,
-    private val stsClient: StsClient,
+    //private val stsClient: StsClient,
+    private val azureAdTokenClient: AzureAdTokenClient,
     @Value("\${aareg.services.url}") private val url: String
 ) {
     companion object {
@@ -31,7 +32,8 @@ class AaregClient(
     @Cacheable(cacheNames = ["arbeidsforholdAT"], key = "#fnr", condition = "#fnr != null")
     fun arbeidsforholdArbeidstaker(fnr: String): List<Arbeidsforhold> {
         metrikk.tellHendelse("call_aareg")
-        val token = stsClient.token()
+        // check which function to use for getting token, or we need to use getOnBehalfOfToken
+        val token = azureAdTokenClient.getSystemToken("scope")
 
         return try {
             val response: ResponseEntity<List<Arbeidsforhold>> = RestTemplate().exchange(

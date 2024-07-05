@@ -13,4 +13,5 @@ data class Variables(
 
 enum class IdentType {
     FOLKEREGISTERIDENT,
+    AKTORID
 }
