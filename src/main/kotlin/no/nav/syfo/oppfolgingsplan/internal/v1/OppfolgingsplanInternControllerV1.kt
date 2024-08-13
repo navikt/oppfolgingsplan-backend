@@ -37,8 +37,7 @@ class OppfolgingsplanInternControllerV1(
         return eregClient.virksomhetsnavn(oppfolgingsplan.virksomhet.virksomhetsnummer)
     }
 
-    @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
-    @RequestMapping(value = ["/historikk"])
+    @GetMapping(value = ["/historikk"], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getHistorikk(@RequestHeader(name = NAV_PERSONIDENT_HEADER) personident: String): List<Historikk> {
         val personFnr = Fodselsnummer(personident)
 
