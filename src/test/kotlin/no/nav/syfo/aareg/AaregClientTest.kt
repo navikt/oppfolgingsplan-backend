@@ -15,9 +15,9 @@ import no.nav.syfo.aareg.utils.AaregClientTestUtils.AT_AKTORID
 import no.nav.syfo.aareg.utils.AaregClientTestUtils.AT_FNR
 import no.nav.syfo.aareg.utils.AaregClientTestUtils.ORGNUMMER
 import no.nav.syfo.aareg.utils.AaregClientTestUtils.simpleArbeidsforhold
+import no.nav.syfo.auth.azure.AzureAdTokenClient
 import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.narmesteleder.objectMapper
-import no.nav.syfo.sts.StsClient
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
@@ -37,16 +37,16 @@ class AaregClientTest : FunSpec({
 
     val restTemplate = mockk<RestTemplate>()
 
-    val stsClient = mockk<StsClient>()
+    val azureAdTokenClient = mockk<AzureAdTokenClient>()
 
-    val aaregClient = AaregClient(metrikk, stsClient, AAREG_URL)
+    val aaregClient = AaregClient(metrikk, azureAdTokenClient, AAREG_URL)
 
     val isAaregServer = WireMockServer(9000)
     listener(WireMockListener(isAaregServer, ListenerMode.PER_TEST))
 
     beforeTest {
         ReflectionTestUtils.setField(aaregClient, "url", AAREG_URL)
-        every { stsClient.token() } returns "token"
+        every { azureAdTokenClient.getSystemToken("scope") } returns "token"
     }
     afterTest { isAaregServer.resetAll() }
 

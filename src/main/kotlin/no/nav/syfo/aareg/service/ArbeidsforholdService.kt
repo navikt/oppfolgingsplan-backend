@@ -16,16 +16,15 @@ import java.time.LocalDate
 
 @Service
 class ArbeidsforholdService(
-    private val aaregConsumer: AaregClient,
+    private val aaregClient: AaregClient,
     private val fellesKodeverkClient: FellesKodeverkClient,
-    private val pdlConsumer: PdlClient
+    private val pdlClient: PdlClient,
 ) {
 
-    // private val log = LoggerFactory.getLogger(ArbeidsforholdService::class.java)
     private val log = LoggerFactory.getLogger(javaClass)
     fun arbeidstakersStillingerForOrgnummer(aktorId: String, fom: LocalDate, orgnummer: String): List<Stilling> {
-        val fnr: String = pdlConsumer.fnr(aktorId)
-        val arbeidsforholdList: List<Arbeidsforhold> = aaregConsumer.arbeidsforholdArbeidstaker(fnr)
+        val fnr: String = pdlClient.fnr(aktorId)
+        val arbeidsforholdList: List<Arbeidsforhold> = aaregClient.arbeidsforholdArbeidstaker(fnr)
         return arbeidsforholdList2StillingForOrgnummer(arbeidsforholdList, orgnummer, fom)
     }
 
@@ -36,7 +35,7 @@ class ArbeidsforholdService(
 
     fun arbeidstakersStillinger(fnr: String): List<Stilling> {
         val kodeverkBetydninger = fellesKodeverkClient.kodeverkKoderBetydninger()
-        return aaregConsumer.arbeidsforholdArbeidstaker(fnr)
+        return aaregClient.arbeidsforholdArbeidstaker(fnr)
             .filter { arbeidsforhold ->
                 arbeidsforhold.arbeidsgiver!!.type.equals(OpplysningspliktigArbeidsgiver.Type.Organisasjon)
             }

@@ -19,7 +19,6 @@ import org.springframework.web.client.RestTemplate
 @Service
 class AaregClient(
     private val metrikk: Metrikk,
-    //private val stsClient: StsClient,
     private val azureAdTokenClient: AzureAdTokenClient,
     @Value("\${aareg.services.url}") private val url: String
 ) {
