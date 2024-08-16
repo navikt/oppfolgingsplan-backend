@@ -121,6 +121,8 @@ spec:
       value: http://istilgangskontroll.teamsykefravr
     - name: AAREG_SERVICES_URL
       value: https://aareg-services-q1.dev.intern.nav.no/api
+    - name: FELLESKODEVERK_URL
+      value: https://kodeverk-api.nav.no/api/v1
   redis:
     - instance: oppfolgingsplan
       access: readwrite
