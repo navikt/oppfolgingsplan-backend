@@ -32,7 +32,6 @@ import org.assertj.core.api.Assertions.assertThat
 import java.time.LocalDate
 import java.time.LocalDate.now
 
-
 class ArbeidsforholdServiceTest : DescribeSpec({
 
     var aaregClient = mockk<AaregClient>()
@@ -238,5 +237,3 @@ fun ansettelsesperiode(fom: LocalDate?, tom: LocalDate?): Ansettelsesperiode {
         )
     )
 }
-
-

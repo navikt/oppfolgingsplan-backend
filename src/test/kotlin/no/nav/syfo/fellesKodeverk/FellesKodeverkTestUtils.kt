@@ -25,7 +25,6 @@ fun fellesKodeverkResponseBodyWithWrongKode(): KodeverkKoderBetydningerResponse 
     return KodeverkKoderBetydningerResponse(betydninger)
 }
 
-
 const val STILLINGSNAVN = "Special Agent"
 const val WRONG_STILLINGSNAVN = "Deputy Director"
 const val STILLINGSKODE = "1234567"
