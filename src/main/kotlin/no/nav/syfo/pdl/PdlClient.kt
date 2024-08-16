@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders.AUTHORIZATION
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.RestTemplate
 
@@ -31,8 +32,8 @@ class PdlClient(
     fun person(ident: String): PdlHentPerson? {
         metric.tellHendelse("call_pdl")
 
-        val query = this::class.java.getResource("/pdl/hentPerson.graphql").readText().replace("[\n\r]", "")
-        val entity = createRequestEntity(PdlRequest(query, Variables(ident)))
+        val query = this::class.java.getResource("/pdl/hentPerson.graphql")?.readText()?.replace("[\n\r]", "")
+        val entity = createRequestEntity(PdlRequest(query ?: "", Variables(ident)))
         try {
             val pdlPerson = RestTemplate().exchange(
                 pdlUrl,
@@ -77,41 +78,40 @@ class PdlClient(
         metric.tellHendelse("call_pdl")
         val gruppe = identType.name
 
-        val query = this::class.java.getResource("/pdl/hentIdenter.graphql").readText().replace("[\n\r]", "")
+        val query = this::class.java.getResource("/pdl/hentIdenter.graphql")?.readText()?.replace("[\n\r]", "")
         val entity = createRequestEntity(
-            PdlRequest(query, Variables(ident = ident, grupper = gruppe))
+            PdlRequest(query ?: "", Variables(ident = ident, grupper = gruppe))
         )
-        try {
-            val pdlIdenter = RestTemplate().exchange(
-                pdlUrl,
-                HttpMethod.POST,
-                entity,
-                object : ParameterizedTypeReference<PdlIdenterResponse>() {}
-            )
+        // try {
+        val pdlIdenter = RestTemplate().exchange(
+            pdlUrl,
+            HttpMethod.POST,
+            entity,
+            object : ParameterizedTypeReference<PdlIdenterResponse>() {}
+        )
 
-            val pdlIdenterReponse = pdlIdenter.body!!
-            if (pdlIdenterReponse.errors != null && pdlIdenterReponse.errors.isNotEmpty()) {
-                metric.tellHendelse("call_pdl_fail")
-                pdlIdenterReponse.errors.forEach {
-                    LOG.error("Error while requesting $gruppe from PersonDataLosningen: ${it.errorMessage()}")
-                }
-                throw RuntimeException("Error while requesting $gruppe from PDL")
-            } else {
-                metric.tellHendelse("call_pdl_success")
-                try {
-                    return pdlIdenterReponse.data?.hentIdenter?.identer?.first()?.ident!!
-                } catch (e: NoSuchElementException) {
-                    LOG.info("Error while requesting $gruppe from PDL. Empty list in hentIdenter response")
-                    throw RuntimeException("Error while requesting $gruppe from PDL")
-                }
+        val pdlIdenterReponse = pdlIdenter.body!!
+        if (pdlIdenterReponse.errors != null && pdlIdenterReponse.errors.isNotEmpty()) {
+            metric.tellHendelse("call_pdl_fail")
+            pdlIdenterReponse.errors.forEach {
+                LOG.error("Error while requesting $gruppe from PersonDataLosningen: ${it.errorMessage()}")
             }
-        } catch (exception: RestClientResponseException) {
+            throw RestClientException("Error while requesting $gruppe from PDL")
+        } else {
+            metric.tellHendelse("call_pdl_success")
+            try {
+                return pdlIdenterReponse.data?.hentIdenter?.identer?.first()?.ident!!
+            } catch (e: NoSuchElementException) {
+                LOG.info("Error while requesting $gruppe from PDL. Empty list in hentIdenter response", e)
+                throw RestClientException("Error while requesting $gruppe from PDL")
+            }
+        }
+        /*} catch (exception: RestClientResponseException) {
             metric.tellHendelse("call_pdl_fail")
             LOG.error("Error from PDL with request-url: $pdlUrl", exception)
             throw exception
-        }
+        }*/
     }
-
 
     companion object {
         private val LOG = LoggerFactory.getLogger(PdlClient::class.java)

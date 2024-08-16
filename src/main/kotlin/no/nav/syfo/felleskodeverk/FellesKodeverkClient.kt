@@ -36,28 +36,12 @@ class FellesKodeverkClient @Autowired constructor(
                 KodeverkKoderBetydningerResponse::class.java
             )
             metric.tellHendelse("call_felleskodeverk_success")
-            response.body ?: throw RuntimeException("Response body is null")
+            response.body ?: throw RestClientException("Response body is null")
         } catch (e: RestClientException) {
             metric.tellHendelse("call_felleskodeverk_fail")
             LOG.error("Error from Felles Kodeverk with request-url: $kodeverkYrkerBetydningUrl", e)
-            throw RuntimeException("Tried to get kodeBetydninger from Felles Kodeverk", e)
+            throw RestClientException("Tried to get kodeBetydninger from Felles Kodeverk", e)
         }
-    }
-
-    /*fun stillingsnavnFromKode(stillingskode: String): String {
-        val response = kodeverkKoderBetydninger()
-        return try {
-            val stillingsnavn = stillingsnavnFromKodeverkKoderBetydningerResponse(response, stillingskode).lowerCapitalize(stillingsnavn)
-        } catch (e: NullPointerException) {
-            LOG.error("Couldn't find navn for stillingskode: $stillingskode")
-            "Ugyldig yrkeskode $stillingskode"
-        }
-    }*/
-
-    private fun stillingsnavnFromKodeverkKoderBetydningerResponse
-                (response: KodeverkKoderBetydningerResponse, stillingskode: String): String {
-        return response.betydninger?.get(stillingskode)?.get(0)?.beskrivelser?.get("nb")?.tekst
-            ?: throw NullPointerException("Response for stillingskode $stillingskode is null")
     }
 
     private fun entity(): HttpEntity<Void> {

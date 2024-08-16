@@ -34,7 +34,8 @@ class StsClient @Autowired constructor(
                 metrikk.tellHendelse(METRIC_CALL_STS_SUCCESS)
             } catch (e: RestClientResponseException) {
                 LOG.error(
-                    "Request to get STS failed with status: ${e.statusCode.value()} and message: ${e.responseBodyAsString}"
+                    "Request to get STS failed with status: " +
+                        "${e.statusCode.value()} and message: ${e.responseBodyAsString}"
                 )
                 metrikk.tellHendelse(METRIC_CALL_STS_FAIL)
                 throw e
