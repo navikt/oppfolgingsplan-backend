@@ -33,6 +33,7 @@ class ArbeidsforholdController(
         /*val innloggetFnr =
             TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId).fnrFromIdportenTokenX().value
 */
+        log.info("Henter stillinger for aktorId $aktorId, orgnummer $orgnummer")
         val stillinger = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(aktorId, date, orgnummer)
         log.info("Hentet ${stillinger.size} stillinger for aktorId $aktorId, orgnummer $orgnummer")
         stillinger.forEach { log.info("Stilling: {${it.orgnummer}, ${it.fom}, ${it.tom}, ${it.yrke}, ${it.prosent}") }
