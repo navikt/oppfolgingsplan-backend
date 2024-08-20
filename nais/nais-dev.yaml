@@ -123,6 +123,8 @@ spec:
       value: https://aareg-services-q1.dev.intern.nav.no/api
     - name: FELLESKODEVERK_URL
       value: https://kodeverk-api.nav.no/api/v1
+    - name: FELLESKODEVERK_SCOPE
+      value: api://dev-gcp.team-rocket.kodeverk-api/.default
   redis:
     - instance: oppfolgingsplan
       access: readwrite
