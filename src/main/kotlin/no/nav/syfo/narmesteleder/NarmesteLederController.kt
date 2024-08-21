@@ -2,6 +2,7 @@ package no.nav.syfo.narmesteleder
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
+import no.nav.syfo.aareg.service.ArbeidsforholdService
 import no.nav.syfo.auth.tokenx.TokenXUtil
 import no.nav.syfo.auth.tokenx.TokenXUtil.TokenXIssuer.TOKENX
 import no.nav.syfo.auth.tokenx.TokenXUtil.fnrFromIdportenTokenX
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
+import java.time.LocalDate
 
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4", "acr=idporten-loa-high"], combineWithOr = true)
@@ -32,7 +34,9 @@ class NarmesteLederController @Autowired constructor(
     @Value("\${oppfolgingsplan.frontend.client.id}")
     private val oppfolgingsplanClientId: String,
     private val brukertilgangService: BrukertilgangService,
+    private val arbeidsforholdService: ArbeidsforholdService,
 ) {
+    private val log = LoggerFactory.getLogger(NarmesteLederController::class.java)
 
     @ResponseBody
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE], path = ["/virksomhet"])
@@ -59,6 +63,23 @@ class NarmesteLederController @Autowired constructor(
                     .status(HttpStatus.FORBIDDEN)
                     .build()
             } else {
+                log.info("Henter stillinger from ArbeidsforholdService for $fnr")
+                val stillinger = arbeidsforholdService.arbeidstakersStillinger(fnr)
+                log.info("Hentet  alle stillinger from ArbeidsforholdService for $fnr: $stillinger")
+                log.info("Henter nærmeste leder for $fnr i virksomhet $virksomhetsnummer")
+                val stillingerIFlereVirksomhet =
+                    arbeidsforholdService.arbeidstakersStillingerForOrgnummer(fnr, listOf(virksomhetsnummer))
+                log.info("Hentet stillinger for $fnr i virksomhet $virksomhetsnummer: $stillingerIFlereVirksomhet")
+                log.info("Henter stillinger for $fnr i virksomhet $virksomhetsnummer")
+                val stillingerForVirksomhet = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(
+                    fnr,
+                    LocalDate.now(),
+                    virksomhetsnummer
+                )
+                log.info(
+                    "Hentet stillinger for $fnr i virksomhet $virksomhetsnummer: $stillingerForVirksomhet from date:" +
+                        "${LocalDate.now()}"
+                )
                 val aktivLeder = narmesteLederClient.aktivNarmesteLederIVirksomhet(
                     ansattFnr = fnr,
                     virksomhetsnummer = virksomhetsnummer
