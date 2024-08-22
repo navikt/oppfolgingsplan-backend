@@ -36,7 +36,6 @@ class NarmesteLederController @Autowired constructor(
     private val brukertilgangService: BrukertilgangService,
     private val arbeidsforholdService: ArbeidsforholdService,
 ) {
-    private val log = LoggerFactory.getLogger(NarmesteLederController::class.java)
 
     @ResponseBody
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE], path = ["/virksomhet"])
@@ -63,20 +62,20 @@ class NarmesteLederController @Autowired constructor(
                     .status(HttpStatus.FORBIDDEN)
                     .build()
             } else {
-                log.info("Henter stillinger from ArbeidsforholdService for $fnr")
+                LOG.info("Henter stillinger from ArbeidsforholdService for $fnr")
                 val stillinger = arbeidsforholdService.arbeidstakersStillinger(fnr)
-                log.info("Hentet  alle stillinger from ArbeidsforholdService for $fnr: $stillinger")
-                log.info("Henter nærmeste leder for $fnr i virksomhet $virksomhetsnummer")
+                LOG.info("Hentet  alle stillinger from ArbeidsforholdService for $fnr: $stillinger")
+                LOG.info("Henter nærmeste leder for $fnr i virksomhet $virksomhetsnummer")
                 val stillingerIFlereVirksomhet =
                     arbeidsforholdService.arbeidstakersStillingerForOrgnummer(fnr, listOf(virksomhetsnummer))
-                log.info("Hentet stillinger for $fnr i virksomhet $virksomhetsnummer: $stillingerIFlereVirksomhet")
-                log.info("Henter stillinger for $fnr i virksomhet $virksomhetsnummer")
+                LOG.info("Hentet stillinger for $fnr i virksomhet $virksomhetsnummer: $stillingerIFlereVirksomhet")
+                LOG.info("Henter stillinger for $fnr i virksomhet $virksomhetsnummer")
                 val stillingerForVirksomhet = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(
                     fnr,
                     LocalDate.now(),
                     virksomhetsnummer
                 )
-                log.info(
+                LOG.info(
                     "Hentet stillinger for $fnr i virksomhet $virksomhetsnummer: $stillingerForVirksomhet from date:" +
                         "${LocalDate.now()}"
                 )
