@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4", "acr=idporten-loa-high"], combineWithOr = true)
@@ -62,23 +61,6 @@ class NarmesteLederController @Autowired constructor(
                     .status(HttpStatus.FORBIDDEN)
                     .build()
             } else {
-                LOG.info("Henter stillinger from ArbeidsforholdService for $fnr")
-                val stillinger = arbeidsforholdService.arbeidstakersStillinger(fnr)
-                LOG.info("Hentet  alle stillinger from ArbeidsforholdService for $fnr: $stillinger")
-                LOG.info("Henter nærmeste leder for $fnr i virksomhet $virksomhetsnummer")
-                val stillingerIFlereVirksomhet =
-                    arbeidsforholdService.arbeidstakersStillingerForOrgnummer(fnr, listOf(virksomhetsnummer))
-                LOG.info("Hentet stillinger for $fnr i virksomhet $virksomhetsnummer: $stillingerIFlereVirksomhet")
-                LOG.info("Henter stillinger for $fnr i virksomhet $virksomhetsnummer")
-                val stillingerForVirksomhet = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(
-                    fnr,
-                    LocalDate.now(),
-                    virksomhetsnummer
-                )
-                LOG.info(
-                    "Hentet stillinger for $fnr i virksomhet $virksomhetsnummer: $stillingerForVirksomhet from date:" +
-                        "${LocalDate.now()}"
-                )
                 val aktivLeder = narmesteLederClient.aktivNarmesteLederIVirksomhet(
                     ansattFnr = fnr,
                     virksomhetsnummer = virksomhetsnummer
@@ -104,7 +86,23 @@ class NarmesteLederController @Autowired constructor(
         val innloggetIdent = TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
             .fnrFromIdportenTokenX()
             .value
-
+        LOG.info("Henter stillinger from ArbeidsforholdService for $innloggetIdent")
+        val stillinger = arbeidsforholdService.arbeidstakersStillinger(innloggetIdent)
+        LOG.info("Hentet  alle stillinger from ArbeidsforholdService for $innloggetIdent: $stillinger")
+        /*LOG.info("Henter nærmeste leder for $innloggetIdent i virksomhet $virksomhetsnummer")
+        val stillingerIFlereVirksomhet =
+            arbeidsforholdService.arbeidstakersStillingerForOrgnummer(fnr, listOf(virksomhetsnummer))
+        LOG.info("Hentet stillinger for $fnr i virksomhet $virksomhetsnummer: $stillingerIFlereVirksomhet")
+        LOG.info("Henter stillinger for $fnr i virksomhet $virksomhetsnummer")
+        val stillingerForVirksomhet = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(
+            fnr,
+            LocalDate.now(),
+            virksomhetsnummer
+        )
+        LOG.info(
+            "Hentet stillinger for $fnr i virksomhet $virksomhetsnummer: $stillingerForVirksomhet from date:" +
+                    "${LocalDate.now()}"
+        )*/
         val narmesteLedere = narmesteLederClient.alleLedereForSykmeldt(ansattFnr = innloggetIdent)
 
         return if (narmesteLedere.isNotEmpty()) {
