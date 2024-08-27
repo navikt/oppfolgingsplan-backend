@@ -120,7 +120,7 @@ spec:
     - name: ISTILGANGSKONTROLL_URL
       value: http://istilgangskontroll.teamsykefravr
     - name: AAREG_SERVICES_URL
-      value: https://aareg-services.intern.nav.no/api
+      value: https://aareg-services.prod-fss-pub.nais.io
     - name: FELLESKODEVERK_URL
       value: https://kodeverk-api.nav.no/api/v1
     - name: FELLESKODEVERK_SCOPE
