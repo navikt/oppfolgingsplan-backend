@@ -31,6 +31,7 @@ import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 
 const val AAREG_URL = "http://localhost:9000"
+const val AAREG_SCOPE = "scope"
 
 class AaregClientTest : FunSpec({
     val metrikk = mockk<Metrikk>(relaxed = true)
@@ -39,7 +40,7 @@ class AaregClientTest : FunSpec({
 
     val azureAdTokenClient = mockk<AzureAdTokenClient>()
 
-    val aaregClient = AaregClient(metrikk, azureAdTokenClient, AAREG_URL)
+    val aaregClient = AaregClient(metrikk, azureAdTokenClient, AAREG_URL, AAREG_SCOPE)
 
     val isAaregServer = WireMockServer(9000)
     listener(WireMockListener(isAaregServer, ListenerMode.PER_TEST))

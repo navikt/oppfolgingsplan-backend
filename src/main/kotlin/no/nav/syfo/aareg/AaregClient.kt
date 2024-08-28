@@ -20,7 +20,8 @@ import org.springframework.web.client.RestTemplate
 class AaregClient(
     private val metrikk: Metrikk,
     private val azureAdTokenClient: AzureAdTokenClient,
-    @Value("\${aareg.services.url}") private val url: String
+    @Value("\${aareg.services.url}") private val url: String,
+    @Value("\${aareg.scope}") private val scope: String
 ) {
     companion object {
         private val LOG = LoggerFactory.getLogger(AaregClient::class.java)
@@ -32,7 +33,7 @@ class AaregClient(
     fun arbeidsforholdArbeidstaker(fnr: String): List<Arbeidsforhold> {
         metrikk.tellHendelse("call_aareg")
         // check which function to use for getting token, or we need to use getOnBehalfOfToken
-        val token = azureAdTokenClient.getSystemToken("scope")
+        val token = azureAdTokenClient.getSystemToken(scope)
 
         return try {
             val response: ResponseEntity<List<Arbeidsforhold>> = RestTemplate().exchange(
