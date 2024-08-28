@@ -30,14 +30,12 @@ class AaregClient(
     }
     private val cleanedScope =
         if (scope.startsWith("api://")) scope.replace("api://", "") else scope
-    init {
-        LOG.info("AaregClient with url: $url")
-        LOG.info("AaregClient with scope: $scope")
-        LOG.info("AaregClient with cleanedScope: $cleanedScope")
-    }
 
     @Cacheable(cacheNames = ["arbeidsforholdAT"], key = "#fnr", condition = "#fnr != null")
     fun arbeidsforholdArbeidstaker(fnr: String): List<Arbeidsforhold> {
+        LOG.info("AaregClient with url: $url")
+        LOG.info("AaregClient with scope: $scope")
+        LOG.info("AaregClient with cleanedScope: $cleanedScope")
         metrikk.tellHendelse("call_aareg")
         // check which function to use for getting token, or we need to use getOnBehalfOfToken
         val token = azureAdTokenClient.getSystemToken(cleanedScope)
