@@ -42,7 +42,7 @@ class AzureAdTokenClient @Autowired constructor(
     private fun commonRequestBody(scopeClientId: String): LinkedMultiValueMap<String, String> {
         val body = LinkedMultiValueMap<String, String>()
         body.add("client_id", azureAppClientId)
-        body.add("scope", "api://$scopeClientId/.default")
+        body.add("scope", "$scopeClientId/.default")
         body.add("client_secret", azureAppClientSecret)
         return body
     }
