@@ -59,7 +59,7 @@ class AaregClient(
     private fun entity(fnr: String, token: String): HttpEntity<*> {
         val headers = HttpHeaders()
         headers.add(HttpHeaders.AUTHORIZATION, bearerHeader(token))
-        headers.add(NAV_CONSUMER_TOKEN_HEADER, bearerHeader(token))
+        // headers.add(NAV_CONSUMER_TOKEN_HEADER, bearerHeader(token))
         headers.add(NAV_PERSONIDENT_HEADER, fnr)
         return HttpEntity<Any>(headers)
     }
