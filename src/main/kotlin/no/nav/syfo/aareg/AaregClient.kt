@@ -65,6 +65,6 @@ class AaregClient(
     }
 
     private fun arbeidstakerUrl(): String {
-        return "$url/v1/arbeidstaker/arbeidsforhold"
+        return "$url/api/v1/arbeidstaker/arbeidsforhold"
     }
 }
