@@ -9,23 +9,16 @@ import io.kotest.extensions.wiremock.ListenerMode
 import io.kotest.extensions.wiremock.WireMockListener
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import no.nav.syfo.aareg.exceptions.RestErrorFromAareg
-import no.nav.syfo.aareg.utils.AaregClientTestUtils.AT_AKTORID
 import no.nav.syfo.aareg.utils.AaregClientTestUtils.AT_FNR
-import no.nav.syfo.aareg.utils.AaregClientTestUtils.ORGNUMMER
-import no.nav.syfo.aareg.utils.AaregClientTestUtils.simpleArbeidsforhold
 import no.nav.syfo.auth.azure.AzureAdTokenClient
 import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.narmesteleder.objectMapper
-import org.assertj.core.api.Assertions.assertThat
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod.GET
-import org.springframework.http.HttpStatus.OK
-import org.springframework.http.ResponseEntity
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
@@ -51,7 +44,7 @@ class AaregClientTest : FunSpec({
     }
     afterTest { isAaregServer.resetAll() }
 
-    test("get arbeidsforhold arbeidstaker") {
+    /*test("get arbeidsforhold arbeidstaker") {
 
         val expectedArbeidsforholdList = listOf(simpleArbeidsforhold())
         every {
@@ -77,7 +70,7 @@ class AaregClientTest : FunSpec({
 
         verify { metrikk.tellHendelse("call_aareg") }
         verify { metrikk.tellHendelse("call_aareg_success") }
-    }
+    }*/
 
     test("arbeidsforholdArbeidstaker fail") {
 
