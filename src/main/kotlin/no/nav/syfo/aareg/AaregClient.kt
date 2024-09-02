@@ -47,6 +47,8 @@ class AaregClient(
                 entity(fnr, token),
                 object : ParameterizedTypeReference<List<Arbeidsforhold>>() {}
             )
+            LOG.info("Response from AAREG with request-url: $url")
+            LOG.info("Response from AAREG with response-body: ${response.body}")
             metrikk.tellHendelse("call_aareg_success")
             response.body ?: emptyList()
         } catch (e: RestClientException) {
