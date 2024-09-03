@@ -124,9 +124,9 @@ spec:
     - name: FELLESKODEVERK_URL
       value: https://kodeverk-api.nav.no/api/v1
     - name: FELLESKODEVERK_SCOPE
-      value: api://prod-gcp.team-rocket.kodeverk-api/.default
+      value: prod-gcp.team-rocket.kodeverk-api
     - name: AAREG_SCOPE
-      value: api://prod-fss.arbeidsforhold.aareg-services-nais/.default
+      value: prod-fss.arbeidsforhold.aareg-services-nais
   redis:
     - instance: oppfolgingsplan
       access: readwrite

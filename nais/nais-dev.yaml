@@ -126,7 +126,7 @@ spec:
     - name: FELLESKODEVERK_URL
       value: https://kodeverk-api.nav.no/api/v1
     - name: FELLESKODEVERK_SCOPE
-      value: dev-gcp.team-rocket.kodeverk-api/.default
+      value: dev-gcp.team-rocket.kodeverk-api
     - name: AAREG_SCOPE
       value: dev-fss.arbeidsforhold.aareg-services-nais
   redis:
