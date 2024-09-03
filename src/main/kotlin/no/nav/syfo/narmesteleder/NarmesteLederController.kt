@@ -104,7 +104,9 @@ class NarmesteLederController @Autowired constructor(
                     "${LocalDate.now()}"
         )*/
         val narmesteLedere = narmesteLederClient.alleLedereForSykmeldt(ansattFnr = innloggetIdent)
-
+        LOG.info("Hentet nærmeste ledere for $innloggetIdent: $narmesteLedere")
+        LOG.info("Hentet nærmeste ledere for $innloggetIdent: ${narmesteLedere.size}")
+        LOG.info("Hentet nærmeste ledere for $innloggetIdent: ${narmesteLedere.map { it.narmesteLederNavn }}")
         return if (narmesteLedere.isNotEmpty()) {
             ResponseEntity
                 .status(HttpStatus.OK)
