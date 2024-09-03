@@ -105,8 +105,8 @@ class ArbeidsforholdService(
             .filter { arbeidsforhold -> arbeidsforhold.arbeidsgiver!!.organisasjonsnummer.equals(orgnummer) }
             .filter { arbeidsforhold ->
                 arbeidsforhold.ansettelsesperiode!!.periode.tom == null ||
-                    !arbeidsforhold.ansettelsesperiode!!.periode.tom.tilLocalDate()
-                        .isBefore(fom)
+                    !arbeidsforhold.ansettelsesperiode!!.periode.tom?.tilLocalDate()
+                        ?.isBefore(fom)!!
             }
             .flatMap { arbeidsforhold ->
                 arbeidsforhold.arbeidsavtaler!!
