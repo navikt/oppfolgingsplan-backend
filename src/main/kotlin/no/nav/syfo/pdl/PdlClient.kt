@@ -82,7 +82,6 @@ class PdlClient(
         val entity = createRequestEntity(
             PdlRequest(query ?: "", Variables(ident = ident, grupper = gruppe))
         )
-        // try {
         val pdlIdenter = RestTemplate().exchange(
             pdlUrl,
             HttpMethod.POST,
@@ -106,11 +105,6 @@ class PdlClient(
                 throw RestClientException("Error while requesting $gruppe from PDL")
             }
         }
-        /*} catch (exception: RestClientResponseException) {
-            metric.tellHendelse("call_pdl_fail")
-            LOG.error("Error from PDL with request-url: $pdlUrl", exception)
-            throw exception
-        }*/
     }
 
     companion object {

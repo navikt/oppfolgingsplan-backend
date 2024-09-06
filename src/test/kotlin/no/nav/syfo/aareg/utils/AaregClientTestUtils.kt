@@ -18,7 +18,6 @@ object AaregClientTestUtils {
     val PASSED_DATE: LocalDate = LocalDate.of(1970, 1, 2)
     const val YRKESKODE = "1234567"
 
-    // Unused code may will be used in ArbeidsforholdSErviceTest
     const val YRKESNAVN = "yrkesnavn"
     const val YRKESNAVN_CAPITALIZED = "Yrkesnavn"
     const val STILLINGSPROSENT = 50.0
@@ -39,7 +38,6 @@ object AaregClientTestUtils {
         )
     }
 
-    // To be used later in ArbeidsforholdServiceTest
     fun validArbeidsforhold(): Arbeidsforhold {
         return mockArbeidsforhold(ORGNUMMER, Type.Organisasjon, VALID_DATE)
     }

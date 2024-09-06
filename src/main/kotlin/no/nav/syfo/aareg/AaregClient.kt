@@ -37,7 +37,6 @@ class AaregClient(
         LOG.info("AaregClient with scope: $scope")
         LOG.info("AaregClient with cleanedScope: $cleanedScope")
         metrikk.tellHendelse("call_aareg")
-        // check which function to use for getting token, or we need to use getOnBehalfOfToken
         val token = azureAdTokenClient.getSystemToken(cleanedScope)
 
         return try {
@@ -61,7 +60,6 @@ class AaregClient(
     private fun entity(fnr: String, token: String): HttpEntity<*> {
         val headers = HttpHeaders()
         headers.add(HttpHeaders.AUTHORIZATION, bearerHeader(token))
-        // headers.add(NAV_CONSUMER_TOKEN_HEADER, bearerHeader(token))
         headers.add(NAV_PERSONIDENT_HEADER, fnr)
         return HttpEntity<Any>(headers)
     }

@@ -30,9 +30,6 @@ class ArbeidsforholdController(
         @RequestParam date: LocalDate,
         @RequestParam orgnummer: String
     ): ResponseEntity<List<Stilling>> {
-        /*val innloggetFnr =
-            TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId).fnrFromIdportenTokenX().value
-*/
         log.info("Henter stillinger for aktorId $aktorId, orgnummer $orgnummer")
         val stillinger = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(aktorId, date, orgnummer)
         log.info("Hentet ${stillinger.size} stillinger for aktorId $aktorId, orgnummer $orgnummer")
