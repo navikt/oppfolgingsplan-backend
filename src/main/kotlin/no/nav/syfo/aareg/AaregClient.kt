@@ -28,16 +28,13 @@ class AaregClient(
         const val NAV_CONSUMER_TOKEN_HEADER = "Nav-Consumer-Token"
         const val NAV_PERSONIDENT_HEADER = "Nav-Personident"
     }
-    private val cleanedScope =
-        if (scope.startsWith("api://")) scope.replace("api://", "") else scope
 
     @Cacheable(cacheNames = ["arbeidsforholdAT"], key = "#fnr", condition = "#fnr != null")
     fun arbeidsforholdArbeidstaker(fnr: String): List<Arbeidsforhold> {
         LOG.info("AaregClient with url: $url")
         LOG.info("AaregClient with scope: $scope")
-        LOG.info("AaregClient with cleanedScope: $cleanedScope")
         metrikk.tellHendelse("call_aareg")
-        val token = azureAdTokenClient.getSystemToken(cleanedScope)
+        val token = azureAdTokenClient.getSystemToken(scope)
 
         return try {
             val response: ResponseEntity<List<Arbeidsforhold>> = RestTemplate().exchange(

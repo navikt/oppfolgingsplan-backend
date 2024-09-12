@@ -98,7 +98,7 @@ spec:
     - name: KRR_URL
       value: https://digdir-krr-proxy.intern.nav.no/rest/v1/person
     - name: KRR_SCOPE
-      value: prod-gcp.team-rocket.digdir-krr-proxy
+      value: api://prod-gcp.team-rocket.digdir-krr-proxy/.default
     - name: SYFOBRUKERTILGANG_URL
       value: http://syfobrukertilgang
     - name: SYFOBRUKERTILGANG_ID
@@ -110,13 +110,13 @@ spec:
     - name: NARMESTELEDER_CLIENT_ID
       value: prod-gcp:teamsykefravr:isnarmesteleder
     - name: PDL_CLIENT_ID
-      value: "prod-fss.pdl.pdl-api"
+      value: "api://prod-fss.pdl.pdl-api/.default"
     - name: PDL_URL
       value: "https://pdl-api.prod-fss-pub.nais.io/graphql"
     - name: EREG_URL
       value: https://ereg-services.prod-fss-pub.nais.io
     - name: ISTILGANGSKONTROLL_CLIENT_ID
-      value: prod-gcp.teamsykefravr.istilgangskontroll
+      value: api://prod-gcp.teamsykefravr.istilgangskontroll/.default
     - name: ISTILGANGSKONTROLL_URL
       value: http://istilgangskontroll.teamsykefravr
     - name: AAREG_SERVICES_URL
@@ -124,9 +124,9 @@ spec:
     - name: FELLESKODEVERK_URL
       value: https://kodeverk-api.nav.no/api/v1
     - name: FELLESKODEVERK_SCOPE
-      value: prod-gcp.team-rocket.kodeverk-api
+      value: api://prod-gcp.team-rocket.kodeverk-api/.default
     - name: AAREG_SCOPE
-      value: prod-fss.arbeidsforhold.aareg-services-nais
+      value: api://prod-fss.arbeidsforhold.aareg-services-nais/.default
   redis:
     - instance: oppfolgingsplan
       access: readwrite
