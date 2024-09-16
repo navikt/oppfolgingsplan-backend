@@ -30,9 +30,7 @@ class ArbeidsforholdController(
         @RequestParam date: LocalDate,
         @RequestParam orgnummer: String
     ): ResponseEntity<List<Stilling>> {
-        log.info("Henter stillinger for aktorId $aktorId, orgnummer $orgnummer")
         val stillinger = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(aktorId, date, orgnummer)
-        log.info("Hentet ${stillinger.size} stillinger for aktorId $aktorId, orgnummer $orgnummer")
         stillinger.forEach { log.info("Stilling: {${it.orgnummer}, ${it.fom}, ${it.tom}, ${it.yrke}, ${it.prosent}") }
         return ResponseEntity.ok(stillinger)
     }

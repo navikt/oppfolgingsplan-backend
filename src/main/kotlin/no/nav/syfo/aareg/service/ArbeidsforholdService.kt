@@ -1,7 +1,6 @@
 package no.nav.syfo.aareg.service
 
 import no.nav.syfo.aareg.AaregClient
-import no.nav.syfo.aareg.AaregUtils.stillingsprosentWithMaxScale
 import no.nav.syfo.aareg.Arbeidsavtale
 import no.nav.syfo.aareg.Arbeidsforhold
 import no.nav.syfo.aareg.OpplysningspliktigArbeidsgiver
@@ -12,6 +11,8 @@ import no.nav.syfo.pdl.PdlClient
 import no.nav.syfo.util.lowerCapitalize
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
+import java.math.RoundingMode.HALF_UP
 import java.text.ParseException
 import java.time.LocalDate
 
@@ -26,7 +27,6 @@ class ArbeidsforholdService(
     fun arbeidstakersStillingerForOrgnummer(aktorId: String, fom: LocalDate, orgnummer: String): List<Stilling> {
         val fnr: String = pdlClient.fnr(aktorId)
         val arbeidsforholdList: List<Arbeidsforhold> = aaregClient.arbeidsforholdArbeidstaker(fnr)
-        log.info("Arbeidsforhold for arbeidstaker: $arbeidsforholdList")
         return arbeidsforholdList2StillingForOrgnummer(arbeidsforholdList, orgnummer, fom)
     }
 
@@ -40,21 +40,21 @@ class ArbeidsforholdService(
         return try {
             aaregClient.arbeidsforholdArbeidstaker(fnr)
                 .filter { arbeidsforhold ->
-                    arbeidsforhold.arbeidsgiver!!.type.equals(OpplysningspliktigArbeidsgiver.Type.Organisasjon)
+                    arbeidsforhold.arbeidsgiver?.type?.equals(OpplysningspliktigArbeidsgiver.Type.Organisasjon) ?: false
                 }
                 .flatMap { arbeidsforhold ->
                     arbeidsforhold.arbeidsavtaler!!
-                        .sortedWith(compareBy<Arbeidsavtale, String?>(nullsLast()) { it.gyldighetsperiode!!.fom })
+                        .sortedWith(compareBy<Arbeidsavtale, String?>(nullsLast()) { it.gyldighetsperiode?.fom })
                         .map {
                             Stilling(
                                 yrke = stillingsnavnFromKode(it.yrke, kodeverkBetydninger),
                                 prosent = stillingsprosentWithMaxScale(it.stillingsprosent),
                                 fom = beregnRiktigFom(
-                                    it.gyldighetsperiode!!.fom,
+                                    it.gyldighetsperiode?.fom,
                                     arbeidsforhold.ansettelsesperiode!!.periode.fom
                                 ),
                                 tom = beregnRiktigTom(
-                                    it.gyldighetsperiode!!.tom,
+                                    it.gyldighetsperiode?.tom,
                                     arbeidsforhold.ansettelsesperiode!!.periode.tom
                                 ),
                                 orgnummer = arbeidsforhold.arbeidsgiver!!.organisasjonsnummer
@@ -83,13 +83,8 @@ class ArbeidsforholdService(
         /* Den siste arbeidsavtalen har alltid tom = null, selv om arbeidsforholdet er avsluttet.
          Så dersom tom = null og ansettelsesperiodens tom ikke er null,
          er det riktig å bruke ansettelsesperioden sin tom */
-        return if (gyldighetsperiodeTom != null) {
-            gyldighetsperiodeTom.tilLocalDate()
-        } else if (ansettelsesperiodeTom != null) {
-            ansettelsesperiodeTom.tilLocalDate()
-        } else {
-            null
-        }
+        return gyldighetsperiodeTom?.tilLocalDate()
+            ?: ansettelsesperiodeTom?.tilLocalDate()
     }
 
     private fun arbeidsforholdList2StillingForOrgnummer(
@@ -100,12 +95,12 @@ class ArbeidsforholdService(
         val kodeverkBetydninger = fellesKodeverkClient.kodeverkKoderBetydninger()
         return arbeidsforholdListe
             .filter { arbeidsforhold ->
-                arbeidsforhold.arbeidsgiver!!.type.equals(OpplysningspliktigArbeidsgiver.Type.Organisasjon)
+                arbeidsforhold.arbeidsgiver?.type?.equals(OpplysningspliktigArbeidsgiver.Type.Organisasjon) ?: false
             }
-            .filter { arbeidsforhold -> arbeidsforhold.arbeidsgiver!!.organisasjonsnummer.equals(orgnummer) }
+            .filter { arbeidsforhold -> arbeidsforhold.arbeidsgiver?.organisasjonsnummer.equals(orgnummer) }
             .filter { arbeidsforhold ->
-                arbeidsforhold.ansettelsesperiode!!.periode.tom == null ||
-                    !arbeidsforhold.ansettelsesperiode!!.periode.tom?.tilLocalDate()
+                arbeidsforhold.ansettelsesperiode?.periode?.tom == null ||
+                    !arbeidsforhold.ansettelsesperiode?.periode?.tom?.tilLocalDate()
                         ?.isBefore(fom)!!
             }
             .flatMap { arbeidsforhold ->
@@ -130,6 +125,16 @@ class ArbeidsforholdService(
         }
         val stillingsnavn = stillingsnavnFraFellesKodeverk ?: "Ugyldig yrkeskode $stillingskode"
         return stillingsnavn.lowerCapitalize()
+    }
+
+    fun stillingsprosentWithMaxScale(percent: Double): BigDecimal {
+        val percentAsBigDecimal = BigDecimal.valueOf(percent)
+
+        return if (percentAsBigDecimal.scale() > 1) {
+            percentAsBigDecimal.setScale(1, HALF_UP)
+        } else {
+            percentAsBigDecimal
+        }
     }
 
     private fun String.tilLocalDate(): LocalDate {

@@ -2,7 +2,6 @@ package no.nav.syfo.aareg
 
 import java.io.Serializable
 
-@Suppress("SerialVersionUIDInSerializableClass")
 data class OpplysningspliktigArbeidsgiver(
     var organisasjonsnummer: String,
     var type: Type
@@ -10,5 +9,8 @@ data class OpplysningspliktigArbeidsgiver(
     enum class Type {
         Organisasjon,
         Person
+    }
+    companion object {
+        private const val serialVersionUID: Long = 1
     }
 }

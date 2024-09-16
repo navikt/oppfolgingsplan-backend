@@ -2,7 +2,6 @@ package no.nav.syfo.aareg
 
 import java.io.Serializable
 
-@Suppress("SerialVersionUIDInSerializableClass")
 data class Arbeidsforhold(
     var ansettelsesperiode: Ansettelsesperiode? = null,
     var antallTimerForTimeloennet: List<AntallTimerForTimeloennet>? = null,
@@ -19,4 +18,8 @@ data class Arbeidsforhold(
     var sporingsinformasjon: Sporingsinformasjon? = null,
     var type: String? = null,
     var utenlandsopphold: List<Utenlandsopphold>? = null
-) : Serializable
+) : Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+}

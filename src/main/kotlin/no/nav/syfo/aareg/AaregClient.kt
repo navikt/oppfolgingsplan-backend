@@ -31,20 +31,16 @@ class AaregClient(
 
     @Cacheable(cacheNames = ["arbeidsforholdAT"], key = "#fnr", condition = "#fnr != null")
     fun arbeidsforholdArbeidstaker(fnr: String): List<Arbeidsforhold> {
-        LOG.info("AaregClient with url: $url")
-        LOG.info("AaregClient with scope: $scope")
         metrikk.tellHendelse("call_aareg")
         val token = azureAdTokenClient.getSystemToken(scope)
 
         return try {
             val response: ResponseEntity<List<Arbeidsforhold>> = RestTemplate().exchange(
-                arbeidstakerUrl(),
+                arbeidstakerUrl,
                 GET,
                 entity(fnr, token),
                 object : ParameterizedTypeReference<List<Arbeidsforhold>>() {}
             )
-            LOG.info("Response from AAREG with request-url: $url")
-            LOG.info("Response from AAREG with response-body: ${response.body}")
             metrikk.tellHendelse("call_aareg_success")
             response.body ?: emptyList()
         } catch (e: RestClientException) {
@@ -61,7 +57,5 @@ class AaregClient(
         return HttpEntity<Any>(headers)
     }
 
-    private fun arbeidstakerUrl(): String {
-        return "$url/api/v1/arbeidstaker/arbeidsforhold"
-    }
+    val arbeidstakerUrl: String = "$url/api/v1/arbeidstaker/arbeidsforhold"
 }

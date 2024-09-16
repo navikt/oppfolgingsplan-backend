@@ -5,7 +5,6 @@ import io.mockk.InternalPlatformDsl.toStr
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.syfo.aareg.AaregClient
-import no.nav.syfo.aareg.AaregUtils
 import no.nav.syfo.aareg.Ansettelsesperiode
 import no.nav.syfo.aareg.Arbeidsavtale
 import no.nav.syfo.aareg.Arbeidsforhold
@@ -123,7 +122,7 @@ class ArbeidsforholdServiceTest : DescribeSpec({
         assertThat(actualStillingList).isNotEmpty
         val stilling1 = actualStillingList[0]
         assertThat(stilling1.yrke).isEqualTo(YRKESNAVN_CAPITALIZED)
-        assertThat(stilling1.prosent).isEqualTo(AaregUtils.stillingsprosentWithMaxScale(STILLINGSPROSENT))
+        assertThat(stilling1.prosent).isEqualTo(arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT))
         assertThat(stilling1.fom).isEqualTo(startDate)
         assertThat(stilling1.tom).isEqualTo(stopDate)
     }
@@ -154,7 +153,7 @@ class ArbeidsforholdServiceTest : DescribeSpec({
         assertThat(actualStillingList).isNotEmpty
         val stilling1 = actualStillingList[0]
         assertThat(stilling1.yrke).isEqualTo(YRKESNAVN_CAPITALIZED)
-        assertThat(stilling1.prosent).isEqualTo(AaregUtils.stillingsprosentWithMaxScale(STILLINGSPROSENT))
+        assertThat(stilling1.prosent).isEqualTo(arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT))
         assertThat(stilling1.fom).isEqualTo(startDate)
         assertThat(stilling1.tom).isEqualTo(stopDate)
     }
@@ -197,13 +196,15 @@ class ArbeidsforholdServiceTest : DescribeSpec({
 
         val stilling1 = actualStillingList[0]
         assertThat(stilling1.yrke).isEqualTo(YRKESNAVN_CAPITALIZED)
-        assertThat(stilling1.prosent).isEqualTo(AaregUtils.stillingsprosentWithMaxScale(STILLINGSPROSENT))
+        assertThat(stilling1.prosent).isEqualTo(arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT))
         assertThat(stilling1.fom).isEqualTo(stilling1StartDate)
         assertThat(stilling1.tom).isEqualTo(stilling1StopDate)
 
         val stilling2 = actualStillingList[1]
         assertThat(stilling2.yrke).isEqualTo("Ugyldig yrkeskode 123")
-        assertThat(stilling2.prosent).isEqualTo(AaregUtils.stillingsprosentWithMaxScale(stilling2Stillingsprosent))
+        assertThat(stilling2.prosent).isEqualTo(
+            arbeidsforholdService.stillingsprosentWithMaxScale(stilling2Stillingsprosent)
+        )
         assertThat(stilling2.fom).isEqualTo(stilling2StartDate)
         assertThat(stilling2.tom).isEqualTo(stilling2StopDate)
     }
@@ -219,14 +220,14 @@ fun test_arbeidstakersStillingerForOrgnummer(
     every { pdlClient.fnr(AT_AKTORID) } returns AT_FNR
     val actualStillingList =
         arbeidsforholdService.arbeidstakersStillingerForOrgnummer(AT_AKTORID, now(), ORGNUMMER)
-    verifyStilling(actualStillingList)
+    verifyStilling(actualStillingList, arbeidsforholdService)
 }
 
-fun verifyStilling(stillingList: List<Stilling>) {
+fun verifyStilling(stillingList: List<Stilling>, arbeidsforholdService: ArbeidsforholdService) {
     assertThat(stillingList.size).isEqualTo(1)
     val stilling = stillingList[0]
     assertThat(stilling.yrke).isEqualTo(YRKESNAVN_CAPITALIZED)
-    assertThat(stilling.prosent).isEqualTo(AaregUtils.stillingsprosentWithMaxScale(STILLINGSPROSENT))
+    assertThat(stilling.prosent).isEqualTo(arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT))
 }
 
 fun ansettelsesperiode(fom: LocalDate?, tom: LocalDate?): Ansettelsesperiode {

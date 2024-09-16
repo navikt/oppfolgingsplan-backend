@@ -2,7 +2,6 @@ package no.nav.syfo.aareg
 
 import java.io.Serializable
 
-@Suppress("SerialVersionUIDInSerializableClass")
 data class Sporingsinformasjon(
     var endretAv: String,
     var endretKilde: String,
@@ -12,4 +11,8 @@ data class Sporingsinformasjon(
     var opprettetKilde: String,
     var opprettetKildereferanse: String,
     var opprettetTidspunkt: String
-) : Serializable
+) : Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 1L
+    }
+}
