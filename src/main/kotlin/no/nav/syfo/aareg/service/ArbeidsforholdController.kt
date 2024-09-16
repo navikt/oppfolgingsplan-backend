@@ -3,8 +3,8 @@ package no.nav.syfo.aareg.service
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.syfo.aareg.model.Stilling
 import no.nav.syfo.auth.tokenx.TokenXUtil.TokenXIssuer.TOKENX
+import no.nav.syfo.logger
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
-import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,7 +21,7 @@ import java.time.LocalDate
 class ArbeidsforholdController(
     private val arbeidsforholdService: ArbeidsforholdService,
 ) {
-    private val log = LoggerFactory.getLogger(ArbeidsforholdController::class.java)
+    private val log = logger()
 
     @ResponseBody
     @GetMapping(produces = [APPLICATION_JSON_VALUE])
