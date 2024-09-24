@@ -1,15 +1,14 @@
 package no.nav.syfo.aareg.service
 
 import no.nav.syfo.aareg.AaregClient
-import no.nav.syfo.aareg.Arbeidsavtale
 import no.nav.syfo.aareg.Arbeidsforhold
 import no.nav.syfo.aareg.OpplysningspliktigArbeidsgiver
 import no.nav.syfo.aareg.model.Stilling
 import no.nav.syfo.felleskodeverk.FellesKodeverkClient
 import no.nav.syfo.felleskodeverk.KodeverkKoderBetydningerResponse
+import no.nav.syfo.logger
 import no.nav.syfo.pdl.PdlClient
 import no.nav.syfo.util.lowerCapitalize
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.math.RoundingMode.HALF_UP
@@ -23,7 +22,7 @@ class ArbeidsforholdService(
     private val pdlClient: PdlClient,
 ) {
 
-    private val log = LoggerFactory.getLogger(javaClass)
+    private val log = logger()
     fun arbeidstakersStillingerForOrgnummer(aktorId: String, fom: LocalDate, orgnummer: String): List<Stilling> {
         val fnr: String = pdlClient.fnr(aktorId)
         val arbeidsforholdList: List<Arbeidsforhold> = aaregClient.arbeidsforholdArbeidstaker(fnr)
@@ -40,24 +39,24 @@ class ArbeidsforholdService(
         return try {
             aaregClient.arbeidsforholdArbeidstaker(fnr)
                 .filter { arbeidsforhold ->
-                    arbeidsforhold.arbeidsgiver?.type?.equals(OpplysningspliktigArbeidsgiver.Type.Organisasjon) ?: false
+                    arbeidsforhold.arbeidsgiver.type.equals(OpplysningspliktigArbeidsgiver.Type.Organisasjon)
                 }
                 .flatMap { arbeidsforhold ->
-                    arbeidsforhold.arbeidsavtaler!!
-                        .sortedWith(compareBy<Arbeidsavtale, String?>(nullsLast()) { it.gyldighetsperiode?.fom })
+                    arbeidsforhold.arbeidsavtaler
+                        .sortedWith(compareBy(nullsLast()) { it.gyldighetsperiode?.fom })
                         .map {
                             Stilling(
                                 yrke = stillingsnavnFromKode(it.yrke, kodeverkBetydninger),
                                 prosent = stillingsprosentWithMaxScale(it.stillingsprosent),
                                 fom = beregnRiktigFom(
                                     it.gyldighetsperiode?.fom,
-                                    arbeidsforhold.ansettelsesperiode!!.periode.fom
+                                    arbeidsforhold.ansettelsesperiode.periode.fom
                                 ),
                                 tom = beregnRiktigTom(
                                     it.gyldighetsperiode?.tom,
-                                    arbeidsforhold.ansettelsesperiode!!.periode.tom
+                                    arbeidsforhold.ansettelsesperiode.periode.tom
                                 ),
-                                orgnummer = arbeidsforhold.arbeidsgiver!!.organisasjonsnummer
+                                orgnummer = arbeidsforhold.arbeidsgiver.organisasjonsnummer
                             )
                         }
                 }
@@ -67,10 +66,10 @@ class ArbeidsforholdService(
         }
     }
 
-    fun beregnRiktigFom(gyldighetsperiodeFom: String?, ansettelsesperiodeFom: String): LocalDate {
         /* Gyldighetsperiode sier noe om hvilken måned arbeidsavtalen er rapportert inn,
          og starter på den 1. i måneden selv om arbeidsforholdet startet senere.
          Så dersom gyldighetsperiode er før ansettelsesperioden er det riktig å bruke ansettelsesperioden sin fom.*/
+    fun beregnRiktigFom(gyldighetsperiodeFom: String?, ansettelsesperiodeFom: String): LocalDate {
         val ansattFom = ansettelsesperiodeFom.tilLocalDate()
         return if (gyldighetsperiodeFom == null || LocalDate.parse(gyldighetsperiodeFom).isBefore(ansattFom)) {
             ansattFom
@@ -79,10 +78,10 @@ class ArbeidsforholdService(
         }
     }
 
-    fun beregnRiktigTom(gyldighetsperiodeTom: String?, ansettelsesperiodeTom: String?): LocalDate? {
         /* Den siste arbeidsavtalen har alltid tom = null, selv om arbeidsforholdet er avsluttet.
          Så dersom tom = null og ansettelsesperiodens tom ikke er null,
          er det riktig å bruke ansettelsesperioden sin tom */
+    fun beregnRiktigTom(gyldighetsperiodeTom: String?, ansettelsesperiodeTom: String?): LocalDate? {
         return gyldighetsperiodeTom?.tilLocalDate()
             ?: ansettelsesperiodeTom?.tilLocalDate()
     }
@@ -95,16 +94,16 @@ class ArbeidsforholdService(
         val kodeverkBetydninger = fellesKodeverkClient.kodeverkKoderBetydninger()
         return arbeidsforholdListe
             .filter { arbeidsforhold ->
-                arbeidsforhold.arbeidsgiver?.type?.equals(OpplysningspliktigArbeidsgiver.Type.Organisasjon) ?: false
+                arbeidsforhold.arbeidsgiver.type.equals(OpplysningspliktigArbeidsgiver.Type.Organisasjon)
             }
-            .filter { arbeidsforhold -> arbeidsforhold.arbeidsgiver?.organisasjonsnummer.equals(orgnummer) }
+            .filter { arbeidsforhold -> arbeidsforhold.arbeidsgiver.organisasjonsnummer.equals(orgnummer) }
             .filter { arbeidsforhold ->
-                arbeidsforhold.ansettelsesperiode?.periode?.tom == null ||
-                    !arbeidsforhold.ansettelsesperiode?.periode?.tom?.tilLocalDate()
-                        ?.isBefore(fom)!!
+                arbeidsforhold.ansettelsesperiode.periode.tom == null ||
+                    arbeidsforhold.ansettelsesperiode.periode.tom?.tilLocalDate()
+                        ?.isAfter(fom) ?: false
             }
             .flatMap { arbeidsforhold ->
-                arbeidsforhold.arbeidsavtaler!!
+                arbeidsforhold.arbeidsavtaler
             }
             .map { arbeidsavtale ->
                 Stilling(

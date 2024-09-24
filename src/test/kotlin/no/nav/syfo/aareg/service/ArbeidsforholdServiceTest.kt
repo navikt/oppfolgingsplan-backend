@@ -1,13 +1,13 @@
 package no.nav.syfo.aareg.service
 
 import io.kotest.core.spec.style.DescribeSpec
-import io.mockk.InternalPlatformDsl.toStr
+import io.kotest.matchers.collections.shouldContainNoNulls
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.syfo.aareg.AaregClient
 import no.nav.syfo.aareg.Ansettelsesperiode
 import no.nav.syfo.aareg.Arbeidsavtale
-import no.nav.syfo.aareg.Arbeidsforhold
 import no.nav.syfo.aareg.Gyldighetsperiode
 import no.nav.syfo.aareg.Periode
 import no.nav.syfo.aareg.model.Stilling
@@ -27,7 +27,6 @@ import no.nav.syfo.fellesKodeverk.fellesKodeverkResponseBody
 import no.nav.syfo.fellesKodeverk.fellesKodeverkResponseBodyWithWrongKode
 import no.nav.syfo.felleskodeverk.FellesKodeverkClient
 import no.nav.syfo.pdl.PdlClient
-import org.assertj.core.api.Assertions.assertThat
 import java.time.LocalDate
 import java.time.LocalDate.now
 
@@ -50,7 +49,12 @@ class ArbeidsforholdServiceTest : DescribeSpec({
 
     it("arbeidstakers stillinger for orgnummer should return correct yrke") {
         val arbeidsforholdList = listOf(validArbeidsforhold())
-        test_arbeidstakersStillingerForOrgnummer(arbeidsforholdList, aaregClient, pdlClient, arbeidsforholdService)
+
+        every { aaregClient.arbeidsforholdArbeidstaker(AT_FNR) } returns arbeidsforholdList
+        every { pdlClient.fnr(AT_AKTORID) } returns AT_FNR
+        val actualStillingList =
+            arbeidsforholdService.arbeidstakersStillingerForOrgnummer(AT_AKTORID, now(), ORGNUMMER)
+        verifyStilling(actualStillingList, arbeidsforholdService)
     }
 
     it("arbeidstakers stillinger for orgnummer should return custom message if navn not found") {
@@ -62,25 +66,37 @@ class ArbeidsforholdServiceTest : DescribeSpec({
             arbeidsforholdService.arbeidstakersStillingerForOrgnummer(AT_AKTORID, now(), ORGNUMMER)
 
         val stilling = actualStillingList[0]
-        assertThat(stilling.yrke).isEqualTo("Ugyldig yrkeskode $STILLINGSKODE")
+        stilling.yrke shouldBe "Ugyldig yrkeskode $STILLINGSKODE"
     }
 
     it("arbeidstakers stillinger for orgnummer should only return stillinger with type organization") {
         val arbeidsforholdList = listOf(validArbeidsforhold(), arbeidsforholdTypePerson())
 
-        test_arbeidstakersStillingerForOrgnummer(arbeidsforholdList, aaregClient, pdlClient, arbeidsforholdService)
+        every { aaregClient.arbeidsforholdArbeidstaker(AT_FNR) } returns arbeidsforholdList
+        every { pdlClient.fnr(AT_AKTORID) } returns AT_FNR
+        val actualStillingList =
+            arbeidsforholdService.arbeidstakersStillingerForOrgnummer(AT_AKTORID, now(), ORGNUMMER)
+        verifyStilling(actualStillingList, arbeidsforholdService)
     }
 
     it("arbeidstakers stillinger for orgnummer should only return stillinger valid on date") {
         val arbeidsforholdList = listOf(validArbeidsforhold(), arbeidsforholdWithPassedDate())
 
-        test_arbeidstakersStillingerForOrgnummer(arbeidsforholdList, aaregClient, pdlClient, arbeidsforholdService)
+        every { aaregClient.arbeidsforholdArbeidstaker(AT_FNR) } returns arbeidsforholdList
+        every { pdlClient.fnr(AT_AKTORID) } returns AT_FNR
+        val actualStillingList =
+            arbeidsforholdService.arbeidstakersStillingerForOrgnummer(AT_AKTORID, now(), ORGNUMMER)
+        verifyStilling(actualStillingList, arbeidsforholdService)
     }
 
     it("arbeidstakers stillinger for orgnummer should only return stillinger with orgnummer") {
         val arbeidsforholdList = listOf(validArbeidsforhold(), arbeidsforholdWithWrongOrgnummer())
 
-        test_arbeidstakersStillingerForOrgnummer(arbeidsforholdList, aaregClient, pdlClient, arbeidsforholdService)
+        every { aaregClient.arbeidsforholdArbeidstaker(AT_FNR) } returns arbeidsforholdList
+        every { pdlClient.fnr(AT_AKTORID) } returns AT_FNR
+        val actualStillingList =
+            arbeidsforholdService.arbeidstakersStillingerForOrgnummer(AT_AKTORID, now(), ORGNUMMER)
+        verifyStilling(actualStillingList, arbeidsforholdService)
     }
 
     it("arbeidstakers stillinger for orgnummer should return empty list when no valid arbeidsforhold") {
@@ -93,7 +109,7 @@ class ArbeidsforholdServiceTest : DescribeSpec({
         every { pdlClient.fnr(AT_AKTORID) } returns AT_FNR
         val actualStillingList = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(AT_AKTORID, now(), ORGNUMMER)
 
-        assertThat(actualStillingList).isEmpty()
+        actualStillingList.size shouldBe 0
     }
 
     it("should map arbeidsforhold with only one arbeidsavtale") {
@@ -119,12 +135,12 @@ class ArbeidsforholdServiceTest : DescribeSpec({
 
         val actualStillingList = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(AT_FNR, listOf(ORGNUMMER))
 
-        assertThat(actualStillingList).isNotEmpty
+        actualStillingList.shouldContainNoNulls()
         val stilling1 = actualStillingList[0]
-        assertThat(stilling1.yrke).isEqualTo(YRKESNAVN_CAPITALIZED)
-        assertThat(stilling1.prosent).isEqualTo(arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT))
-        assertThat(stilling1.fom).isEqualTo(startDate)
-        assertThat(stilling1.tom).isEqualTo(stopDate)
+        stilling1.yrke shouldBe YRKESNAVN_CAPITALIZED
+        stilling1.prosent shouldBe arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT)
+        stilling1.fom shouldBe startDate
+        stilling1.tom shouldBe stopDate
     }
 
     it("should map arbeidsforhold with only avsluttet arbeidsavtale") {
@@ -149,13 +165,12 @@ class ArbeidsforholdServiceTest : DescribeSpec({
         every { aaregClient.arbeidsforholdArbeidstaker(AT_FNR) } returns arbeidsforholdList
 
         val actualStillingList = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(AT_FNR, listOf(ORGNUMMER))
-
-        assertThat(actualStillingList).isNotEmpty
+        actualStillingList.shouldContainNoNulls()
         val stilling1 = actualStillingList[0]
-        assertThat(stilling1.yrke).isEqualTo(YRKESNAVN_CAPITALIZED)
-        assertThat(stilling1.prosent).isEqualTo(arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT))
-        assertThat(stilling1.fom).isEqualTo(startDate)
-        assertThat(stilling1.tom).isEqualTo(stopDate)
+        stilling1.yrke shouldBe YRKESNAVN_CAPITALIZED
+        stilling1.prosent shouldBe arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT)
+        stilling1.fom shouldBe startDate
+        stilling1.tom shouldBe stopDate
     }
 
     it("should map arbeidsforhold with two arbeidsavtaler") {
@@ -182,7 +197,7 @@ class ArbeidsforholdServiceTest : DescribeSpec({
                             stillingsprosent = stilling2Stillingsprosent,
                             gyldighetsperiode = Gyldighetsperiode(
                                 fom = stilling2StartDate.toString(),
-                                tom = stilling2StopDate.toStr()
+                                tom = stilling2StopDate.toString()
                             )
                         )
                     )
@@ -192,42 +207,27 @@ class ArbeidsforholdServiceTest : DescribeSpec({
 
         val actualStillingList = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(AT_FNR, listOf(ORGNUMMER))
 
-        assertThat(actualStillingList).isNotEmpty
+        actualStillingList.shouldContainNoNulls()
 
         val stilling1 = actualStillingList[0]
-        assertThat(stilling1.yrke).isEqualTo(YRKESNAVN_CAPITALIZED)
-        assertThat(stilling1.prosent).isEqualTo(arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT))
-        assertThat(stilling1.fom).isEqualTo(stilling1StartDate)
-        assertThat(stilling1.tom).isEqualTo(stilling1StopDate)
+        stilling1.yrke shouldBe YRKESNAVN_CAPITALIZED
+        stilling1.prosent shouldBe arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT)
+        stilling1.fom shouldBe stilling1StartDate
+        stilling1.tom shouldBe stilling1StopDate
 
         val stilling2 = actualStillingList[1]
-        assertThat(stilling2.yrke).isEqualTo("Ugyldig yrkeskode 123")
-        assertThat(stilling2.prosent).isEqualTo(
-            arbeidsforholdService.stillingsprosentWithMaxScale(stilling2Stillingsprosent)
-        )
-        assertThat(stilling2.fom).isEqualTo(stilling2StartDate)
-        assertThat(stilling2.tom).isEqualTo(stilling2StopDate)
+        stilling2.yrke shouldBe "Ugyldig yrkeskode 123"
+        stilling2.prosent shouldBe arbeidsforholdService.stillingsprosentWithMaxScale(stilling2Stillingsprosent)
+        stilling2.fom shouldBe stilling2StartDate
+        stilling2.tom shouldBe stilling2StopDate
     }
 })
 
-fun test_arbeidstakersStillingerForOrgnummer(
-    arbeidsforholdList: List<Arbeidsforhold>,
-    aaregClient: AaregClient,
-    pdlClient: PdlClient,
-    arbeidsforholdService: ArbeidsforholdService
-) {
-    every { aaregClient.arbeidsforholdArbeidstaker(AT_FNR) } returns arbeidsforholdList
-    every { pdlClient.fnr(AT_AKTORID) } returns AT_FNR
-    val actualStillingList =
-        arbeidsforholdService.arbeidstakersStillingerForOrgnummer(AT_AKTORID, now(), ORGNUMMER)
-    verifyStilling(actualStillingList, arbeidsforholdService)
-}
-
 fun verifyStilling(stillingList: List<Stilling>, arbeidsforholdService: ArbeidsforholdService) {
-    assertThat(stillingList.size).isEqualTo(1)
+    stillingList.size shouldBe 1
     val stilling = stillingList[0]
-    assertThat(stilling.yrke).isEqualTo(YRKESNAVN_CAPITALIZED)
-    assertThat(stilling.prosent).isEqualTo(arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT))
+    stilling.yrke shouldBe YRKESNAVN_CAPITALIZED
+    stilling.prosent shouldBe arbeidsforholdService.stillingsprosentWithMaxScale(STILLINGSPROSENT)
 }
 
 fun ansettelsesperiode(fom: LocalDate?, tom: LocalDate?): Ansettelsesperiode {

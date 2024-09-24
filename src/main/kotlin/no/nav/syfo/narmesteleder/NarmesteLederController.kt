@@ -86,14 +86,9 @@ class NarmesteLederController @Autowired constructor(
         val innloggetIdent = TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
             .fnrFromIdportenTokenX()
             .value
-        // Henting og logging av stillinger TO be removed when we use it from where it should be used
-        LOG.info("Henter stillinger from ArbeidsforholdService for $innloggetIdent")
         val stillinger = arbeidsforholdService.arbeidstakersStillinger(innloggetIdent)
-        LOG.info("Hentet  alle stillinger from ArbeidsforholdService for $innloggetIdent: $stillinger")
+        LOG.info("Hentet  alle stillinger from ArbeidsforholdService, totalt ${stillinger.size}")
         val narmesteLedere = narmesteLederClient.alleLedereForSykmeldt(ansattFnr = innloggetIdent)
-        LOG.info("Hentet nærmeste ledere for $innloggetIdent: $narmesteLedere")
-        LOG.info("Hentet nærmeste ledere for $innloggetIdent: ${narmesteLedere.size}")
-        LOG.info("Hentet nærmeste ledere for $innloggetIdent: ${narmesteLedere.map { it.narmesteLederNavn }}")
         return if (narmesteLedere.isNotEmpty()) {
             ResponseEntity
                 .status(HttpStatus.OK)

@@ -19,24 +19,13 @@ import no.nav.syfo.auth.azure.AzureAdTokenClient
 import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.narmesteleder.objectMapper
 import org.assertj.core.api.Assertions.assertThat
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.anyString
-import org.springframework.core.ParameterizedTypeReference
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpMethod.GET
-import org.springframework.http.HttpStatus.OK
-import org.springframework.http.ResponseEntity
 import org.springframework.test.util.ReflectionTestUtils
-import org.springframework.web.client.RestClientException
-import org.springframework.web.client.RestTemplate
 
 const val AAREG_URL = "http://localhost:9000"
 const val AAREG_SCOPE = "scope"
 
 class AaregClientTest : FunSpec({
     val metrikk = mockk<Metrikk>(relaxed = true)
-
-    val restTemplate = mockk<RestTemplate>()
 
     val azureAdTokenClient = mockk<AzureAdTokenClient>()
 
@@ -54,16 +43,6 @@ class AaregClientTest : FunSpec({
     test("get arbeidsforhold arbeidstaker") {
 
         val expectedArbeidsforholdList = listOf(simpleArbeidsforhold())
-        every {
-            restTemplate.exchange(
-                anyString(),
-                eq(GET),
-                any(HttpEntity::class.java),
-                eq(object :
-                    ParameterizedTypeReference<List<Arbeidsforhold>>() {
-                })
-            )
-        } returns ResponseEntity(expectedArbeidsforholdList, OK)
         isAaregServer.stubAaregRelasjoner(expectedArbeidsforholdList)
         val actualArbeidsforholdList = aaregClient.arbeidsforholdArbeidstaker(AT_FNR)
 
@@ -81,16 +60,6 @@ class AaregClientTest : FunSpec({
 
     test("arbeidsforholdArbeidstaker fail") {
 
-        every {
-            restTemplate.exchange(
-                anyString(),
-                eq(GET),
-                any(HttpEntity::class.java),
-                eq(object :
-                    ParameterizedTypeReference<List<Arbeidsforhold>>() {
-                })
-            )
-        } throws RestClientException("Failed!")
         shouldThrowExactly<RestErrorFromAareg> {
             aaregClient.arbeidsforholdArbeidstaker(AT_FNR)
         }

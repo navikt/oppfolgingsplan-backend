@@ -25,7 +25,6 @@ class AaregClient(
 ) {
     companion object {
         private val LOG = LoggerFactory.getLogger(AaregClient::class.java)
-        const val NAV_CONSUMER_TOKEN_HEADER = "Nav-Consumer-Token"
         const val NAV_PERSONIDENT_HEADER = "Nav-Personident"
     }
 

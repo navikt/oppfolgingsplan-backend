@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.RestTemplate
+import java.io.IOException
 
 // Lenke til relevant behandling i behandlingskatalogen:
 // https://behandlingskatalog.nais.adeo.no/process/team/6a3b85e0-0e06-4f58-95bb-4318e31c4b2b/cca7c846-e5a5-4a10-bc7e-6abd6fc1b0f5
@@ -33,7 +34,8 @@ class PdlClient(
         metric.tellHendelse("call_pdl")
 
         val query = this::class.java.getResource("/pdl/hentPerson.graphql")?.readText()?.replace("[\n\r]", "")
-        val entity = createRequestEntity(PdlRequest(query ?: "", Variables(ident)))
+            ?: throw IOException("Failed to load query for hentPerson.graphql")
+        val entity = createRequestEntity(PdlRequest(query, Variables(ident)))
         try {
             val pdlPerson = RestTemplate().exchange(
                 pdlUrl,
@@ -43,7 +45,7 @@ class PdlClient(
             )
 
             val pdlPersonReponse = pdlPerson.body!!
-            return if (pdlPersonReponse.errors != null && pdlPersonReponse.errors.isNotEmpty()) {
+            return if (!pdlPersonReponse.errors.isNullOrEmpty()) {
                 metric.tellHendelse("call_pdl_fail")
                 pdlPersonReponse.errors.forEach {
                     LOG.error("Error while requesting person from PersonDataLosningen: ${it.errorMessage()}")
@@ -78,9 +80,9 @@ class PdlClient(
         metric.tellHendelse("call_pdl")
         val gruppe = identType.name
 
-        val query = this::class.java.getResource("/pdl/hentIdenter.graphql")?.readText()?.replace("[\n\r]", "")
+        val query = getQueryString()
         val entity = createRequestEntity(
-            PdlRequest(query ?: "", Variables(ident = ident, grupper = gruppe))
+            PdlRequest(query, Variables(ident = ident, grupper = gruppe))
         )
         val pdlIdenter = RestTemplate().exchange(
             pdlUrl,
@@ -89,8 +91,8 @@ class PdlClient(
             object : ParameterizedTypeReference<PdlIdenterResponse>() {}
         )
 
-        val pdlIdenterReponse = pdlIdenter.body!!
-        if (pdlIdenterReponse.errors != null && pdlIdenterReponse.errors.isNotEmpty()) {
+        val pdlIdenterReponse = pdlIdenter.body
+        if (pdlIdenterReponse?.errors != null && pdlIdenterReponse.errors.isNotEmpty()) {
             metric.tellHendelse("call_pdl_fail")
             pdlIdenterReponse.errors.forEach {
                 LOG.error("Error while requesting $gruppe from PersonDataLosningen: ${it.errorMessage()}")
@@ -99,13 +101,17 @@ class PdlClient(
         } else {
             metric.tellHendelse("call_pdl_success")
             try {
-                return pdlIdenterReponse.data?.hentIdenter?.identer?.first()?.ident!!
+                return pdlIdenterReponse?.data?.hentIdenter?.identer?.first()?.ident!!
             } catch (e: NoSuchElementException) {
                 LOG.info("Error while requesting $gruppe from PDL. Empty list in hentIdenter response", e)
                 throw RestClientException("Error while requesting $gruppe from PDL")
             }
         }
     }
+
+    private fun getQueryString() =
+        this::class.java.getResource("/pdl/hentIdenter.graphql")?.readText()?.replace("[\n\r]", "")
+            ?: throw IOException("Failed to load query for hentIdenter.graphql")
 
     companion object {
         private val LOG = LoggerFactory.getLogger(PdlClient::class.java)

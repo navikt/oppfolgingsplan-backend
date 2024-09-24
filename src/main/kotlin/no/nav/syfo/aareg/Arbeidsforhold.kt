@@ -1,13 +1,19 @@
 package no.nav.syfo.aareg
 
 import java.io.Serializable
+import java.util.Date
 
 data class Arbeidsforhold(
-    var ansettelsesperiode: Ansettelsesperiode? = null,
+    var ansettelsesperiode: Ansettelsesperiode = Ansettelsesperiode(
+        periode = Periode(Date().toString(), null)
+    ),
     var antallTimerForTimeloennet: List<AntallTimerForTimeloennet>? = null,
-    var arbeidsavtaler: List<Arbeidsavtale>? = null,
+    var arbeidsavtaler: List<Arbeidsavtale> = emptyList(),
     var arbeidsforholdId: String? = null,
-    var arbeidsgiver: OpplysningspliktigArbeidsgiver? = null,
+    var arbeidsgiver: OpplysningspliktigArbeidsgiver = OpplysningspliktigArbeidsgiver(
+        organisasjonsnummer = "",
+        type = OpplysningspliktigArbeidsgiver.Type.Organisasjon
+    ),
     var arbeidstaker: Person? = null,
     var innrapportertEtterAOrdningen: Boolean = false,
     var navArbeidsforholdId: Int = 0,

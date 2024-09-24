@@ -41,7 +41,6 @@ class FellesKodeverkClient @Autowired constructor(
                 KodeverkKoderBetydningerResponse::class.java
             )
             metric.tellHendelse("call_felleskodeverk_success")
-            LOG.info("We have received response from Felles Kodeverk: $response")
             response.body ?: throw RestClientException("Response body is null")
         } catch (e: RestClientException) {
             metric.tellHendelse("call_felleskodeverk_fail")
