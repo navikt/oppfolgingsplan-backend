@@ -7,6 +7,7 @@ import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.wiremock.ListenerMode
 import io.kotest.extensions.wiremock.WireMockListener
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -18,7 +19,6 @@ import no.nav.syfo.aareg.utils.AaregClientTestUtils.simpleArbeidsforhold
 import no.nav.syfo.auth.azure.AzureAdTokenClient
 import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.narmesteleder.objectMapper
-import org.assertj.core.api.Assertions.assertThat
 import org.springframework.test.util.ReflectionTestUtils
 
 const val AAREG_URL = "http://localhost:9000"
@@ -45,14 +45,13 @@ class AaregClientTest : FunSpec({
         val expectedArbeidsforholdList = listOf(simpleArbeidsforhold())
         isAaregServer.stubAaregRelasjoner(expectedArbeidsforholdList)
         val actualArbeidsforholdList = aaregClient.arbeidsforholdArbeidstaker(AT_FNR)
-
-        assertThat(actualArbeidsforholdList.size).isEqualTo(1)
+        actualArbeidsforholdList.size shouldBe 1
 
         val arbeidsforhold = actualArbeidsforholdList[0]
 
-        assertThat(arbeidsforhold.arbeidsgiver?.organisasjonsnummer).isEqualTo(ORGNUMMER)
-        assertThat(arbeidsforhold.arbeidstaker?.aktoerId).isEqualTo(AT_AKTORID)
-        assertThat(arbeidsforhold.arbeidstaker?.offentligIdent).isEqualTo(AT_FNR)
+        arbeidsforhold.arbeidsgiver.organisasjonsnummer shouldBe ORGNUMMER
+        arbeidsforhold.arbeidstaker?.aktoerId shouldBe AT_AKTORID
+        arbeidsforhold.arbeidstaker?.offentligIdent shouldBe AT_FNR
 
         verify { metrikk.tellHendelse("call_aareg") }
         verify { metrikk.tellHendelse("call_aareg_success") }
