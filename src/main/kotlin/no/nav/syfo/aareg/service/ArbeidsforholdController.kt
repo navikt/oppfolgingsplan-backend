@@ -17,10 +17,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseBody
 import org.springframework.web.bind.annotation.RestController
-import java.time.LocalDate
 
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4", "acr=idporten-loa-high"], combineWithOr = true)
@@ -38,8 +36,6 @@ class ArbeidsforholdController(
     @GetMapping(produces = [APPLICATION_JSON_VALUE])
     fun getArbeidstakersStillingerForOrgnummer(
         @RequestHeader(NAV_PERSONIDENT_HEADER) fnr: String,
-        @RequestParam date: LocalDate,
-        @RequestParam orgnummer: String
     ): ResponseEntity<List<Stilling>> {
         val innloggetFnr = TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
             .fnrFromIdportenTokenX()
@@ -56,8 +52,7 @@ class ArbeidsforholdController(
                     .status(HttpStatus.FORBIDDEN)
                     .build()
             } else {
-                val stillinger = arbeidsforholdService.arbeidstakersStillingerForOrgnummer(fnr, date, orgnummer)
-                log.info("Hentet ${stillinger.size} stillinger")
+                val stillinger = arbeidsforholdService.arbeidstakersStillinger(fnr)
                 ResponseEntity.ok(stillinger)
             }
         }

@@ -2,7 +2,6 @@ package no.nav.syfo.narmesteleder
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
-import no.nav.syfo.aareg.service.ArbeidsforholdService
 import no.nav.syfo.auth.tokenx.TokenXUtil
 import no.nav.syfo.auth.tokenx.TokenXUtil.TokenXIssuer.TOKENX
 import no.nav.syfo.auth.tokenx.TokenXUtil.fnrFromIdportenTokenX
@@ -33,7 +32,6 @@ class NarmesteLederController @Autowired constructor(
     @Value("\${oppfolgingsplan.frontend.client.id}")
     private val oppfolgingsplanClientId: String,
     private val brukertilgangService: BrukertilgangService,
-    private val arbeidsforholdService: ArbeidsforholdService,
 ) {
 
     @ResponseBody
@@ -86,8 +84,6 @@ class NarmesteLederController @Autowired constructor(
         val innloggetIdent = TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
             .fnrFromIdportenTokenX()
             .value
-        val stillinger = arbeidsforholdService.arbeidstakersStillinger(innloggetIdent)
-        LOG.info("Hentet  alle stillinger from ArbeidsforholdService, totalt ${stillinger.size}")
         val narmesteLedere = narmesteLederClient.alleLedereForSykmeldt(ansattFnr = innloggetIdent)
         return if (narmesteLedere.isNotEmpty()) {
             ResponseEntity
