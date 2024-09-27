@@ -33,15 +33,12 @@ class NarmesteLederClient(
     ): List<NarmesteLederRelasjonDTO> {
         val issuerToken = TokenUtil.getIssuerToken(contextHolder, TokenXUtil.TokenXIssuer.TOKENX)
         val exchangedToken = tokenDingsConsumer.exchangeToken(issuerToken, targetApp)
-
         try {
             val response = getResponse(
                 fnr = ansattFnr,
                 accessToken = exchangedToken
             )
-
             val relasjoner = response.body ?: emptyArray()
-
             return relasjoner
                 .filter { it.arbeidstakerPersonIdentNumber == ansattFnr }
         } catch (e: RestClientResponseException) {

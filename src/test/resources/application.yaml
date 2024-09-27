@@ -56,6 +56,10 @@ azure.app.client.id: 'client.id'
 azure.app.client.secret: 'client.secret'
 security.token.service.rest.url: "http://security-token-service.url"
 ereg.url: "http://ereg"
+aareg.services.url: "http://aareg-services.url"
+aareg.scope: "scope"
+felleskodeverk.url: "http://kodeverk.url"
+felleskodeverk.scope: "felleskodeverk.scope"
 
 krr.url: "http://krr.url"
 krr.scope: "krr.scope"

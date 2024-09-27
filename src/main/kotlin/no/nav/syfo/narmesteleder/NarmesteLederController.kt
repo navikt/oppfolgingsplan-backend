@@ -84,9 +84,7 @@ class NarmesteLederController @Autowired constructor(
         val innloggetIdent = TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
             .fnrFromIdportenTokenX()
             .value
-
         val narmesteLedere = narmesteLederClient.alleLedereForSykmeldt(ansattFnr = innloggetIdent)
-
         return if (narmesteLedere.isNotEmpty()) {
             ResponseEntity
                 .status(HttpStatus.OK)
