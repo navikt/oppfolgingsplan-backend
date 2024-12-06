@@ -1,8 +1,7 @@
-package no.nav.syfo.oppfolgingsplan.controller.external
+package no.nav.syfo.oppfolgingsplan.controller.internal
 
-import no.nav.security.token.support.core.api.Unprotected
-import no.nav.syfo.pdl.PdlConsumer
-import no.nav.syfo.repository.dao.OppfolgingsplanDAO
+import no.nav.syfo.oppfolgingsplan.repository.dao.OppfolgingsplanDAO
+import no.nav.syfo.pdl.PdlClient
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity
@@ -14,11 +13,10 @@ import java.util.function.Consumer
 import javax.inject.Inject
 
 @RestController
-@Unprotected
-@RequestMapping(value = ["/internal/v2/oppfolgingsplan"])
+@RequestMapping(value = ["/internal/v1/oppfolgingsplan"])
 class NullstillOppfolgingsplanControllerV1 @Inject constructor(
     private val oppfolgingsplanDAO: OppfolgingsplanDAO,
-    private val pdlConsumer: PdlConsumer
+    private val pdlClient: PdlClient
 ) {
     @DeleteMapping(path = ["/slett/{id}"])
     fun deleteOppfolgingsplanById(
@@ -40,7 +38,7 @@ class NullstillOppfolgingsplanControllerV1 @Inject constructor(
         @Value("\${nais.cluster.name}") env: String
     ): ResponseEntity<*> {
         return if (isDev(env)) {
-            val aktorId = pdlConsumer.aktorid(fnr)
+            val aktorId = pdlClient.aktorid(fnr)
             val dialogIder = oppfolgingsplanDAO.hentDialogIDerByAktoerId(aktorId)
             logger.info("Sletter oppfolgingsplaner for aktorId")
             dialogIder.forEach(Consumer { oppfolgingsdialogId: Long ->

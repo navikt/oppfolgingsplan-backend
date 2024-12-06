@@ -2,17 +2,20 @@ package no.nav.syfo.oppfolgingsplan.controller.external
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
-import no.nav.syfo.api.v2.domain.oppfolgingsplan.KommentarRequest
-import no.nav.syfo.api.v2.mapper.toKommentar
+import no.nav.syfo.auth.tokenx.TokenXUtil
+import no.nav.syfo.auth.tokenx.TokenXUtil.TokenXIssuer.TOKENX
+import no.nav.syfo.auth.tokenx.TokenXUtil.fnrFromIdportenTokenX
 import no.nav.syfo.metric.Metrikk
-import no.nav.syfo.service.KommentarService
-import no.nav.syfo.service.TiltakService
-import no.nav.syfo.tokenx.TokenXUtil
-import no.nav.syfo.tokenx.TokenXUtil.TokenXIssuer.TOKENX
-import no.nav.syfo.tokenx.TokenXUtil.fnrFromIdportenTokenX
+import no.nav.syfo.oppfolgingsplan.domain.KommentarDTO
+import no.nav.syfo.oppfolgingsplan.service.KommentarService
+import no.nav.syfo.oppfolgingsplan.service.TiltakService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 import javax.inject.Inject
 
 @RestController
@@ -38,12 +41,12 @@ class TiltakControllerV1 @Inject constructor(
     @PostMapping(path = ["/lagreKommentar"], consumes = [APPLICATION_JSON_VALUE], produces = [APPLICATION_JSON_VALUE])
     fun lagreKommentar(
         @PathVariable("id") id: Long,
-        @RequestBody kommentarRequest: KommentarRequest,
+        @RequestBody kommentarDTO: KommentarDTO,
     ): Long {
         val innloggetIdent = TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
             .fnrFromIdportenTokenX()
             .value
-        val kommentar = kommentarRequest.toKommentar()
+        val kommentar = kommentarDTO
         val kommentarId = kommentarService.lagreKommentar(id, kommentar, innloggetIdent)
         metrikk.tellHendelse("lagre_kommentar")
         return kommentarId

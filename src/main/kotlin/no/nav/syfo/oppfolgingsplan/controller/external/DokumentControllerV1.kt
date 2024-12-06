@@ -2,11 +2,11 @@ package no.nav.syfo.oppfolgingsplan.controller.external
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
+import no.nav.syfo.auth.tokenx.TokenXUtil
+import no.nav.syfo.auth.tokenx.TokenXUtil.TokenXIssuer.TOKENX
+import no.nav.syfo.auth.tokenx.TokenXUtil.fnrFromIdportenTokenX
 import no.nav.syfo.metric.Metrikk
-import no.nav.syfo.service.PdfService
-import no.nav.syfo.tokenx.TokenXUtil
-import no.nav.syfo.tokenx.TokenXUtil.TokenXIssuer.TOKENX
-import no.nav.syfo.tokenx.TokenXUtil.fnrFromIdportenTokenX
+import no.nav.syfo.oppfolgingsplan.service.PdfService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType.APPLICATION_PDF
 import org.springframework.http.ResponseEntity
