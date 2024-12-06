@@ -76,6 +76,11 @@ class PdlClient(
         return hentIdentFraPDL(aktorId, IdentType.FOLKEREGISTERIDENT)
     }
 
+    @Cacheable(cacheNames = ["pdl_aktorid"], key = "#fnr")
+    fun aktorid(fnr: String): String {
+        return hentIdentFraPDL(fnr, IdentType.AKTORID)
+    }
+
     fun hentIdentFraPDL(ident: String, identType: IdentType): String {
         metric.tellHendelse("call_pdl")
         val gruppe = identType.name

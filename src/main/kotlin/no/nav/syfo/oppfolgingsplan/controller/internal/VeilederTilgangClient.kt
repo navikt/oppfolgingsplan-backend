@@ -1,4 +1,4 @@
-package no.nav.syfo.oppfolgingsplan.internal.v1
+package no.nav.syfo.oppfolgingsplan.controller.internal
 
 import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import no.nav.syfo.auth.azure.AzureAdTokenClient

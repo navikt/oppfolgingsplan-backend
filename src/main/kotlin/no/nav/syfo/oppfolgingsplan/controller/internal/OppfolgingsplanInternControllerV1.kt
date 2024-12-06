@@ -1,4 +1,4 @@
-package no.nav.syfo.oppfolgingsplan.internal.v1
+package no.nav.syfo.oppfolgingsplan.controller.internal
 
 import no.nav.security.token.support.core.api.ProtectedWithClaims
 import no.nav.syfo.auth.oidc.OIDCIssuer.INTERN_AZUREAD_V2
