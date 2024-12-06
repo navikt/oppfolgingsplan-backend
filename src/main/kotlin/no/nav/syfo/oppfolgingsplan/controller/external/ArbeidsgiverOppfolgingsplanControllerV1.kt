@@ -14,6 +14,7 @@ import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
 import org.springframework.web.bind.annotation.*
+import java.nio.file.AccessDeniedException
 import javax.inject.Inject
 
 @RestController
@@ -64,7 +65,7 @@ class ArbeidsgiverOppfolgingsplanControllerV1 @Inject constructor(
             metrikk.tellHendelse("opprett_oppfolgingsplan_ag")
             id
         } else {
-            throw ForbiddenException()
+            throw AccessDeniedException("Innlogget bruker er ikke nærmeste leder for sykmeldt")
         }
     }
 }

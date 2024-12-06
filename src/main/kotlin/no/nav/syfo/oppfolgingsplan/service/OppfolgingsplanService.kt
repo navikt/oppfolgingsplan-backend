@@ -1,12 +1,14 @@
 package no.nav.syfo.oppfolgingsplan.service
 
+import no.nav.syfo.oppfolgingsplan.domain.GodkjentPlanDTO
+import no.nav.syfo.oppfolgingsplan.domain.OppfolgingsplanDTO
 import no.nav.syfo.oppfolgingsplan.repository.dao.ArbeidsoppgaveDAO
+import no.nav.syfo.oppfolgingsplan.repository.dao.DokumentDAO
 import no.nav.syfo.oppfolgingsplan.repository.dao.GodkjenningerDAO
 import no.nav.syfo.oppfolgingsplan.repository.dao.GodkjentplanDAO
 import no.nav.syfo.oppfolgingsplan.repository.dao.KommentarDAO
 import no.nav.syfo.oppfolgingsplan.repository.dao.OppfolgingsplanDAO
 import no.nav.syfo.oppfolgingsplan.repository.dao.TiltakDAO
-import no.nav.syfo.pdl.PdlClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -19,45 +21,27 @@ import javax.inject.Inject
 
 @Service
 class OppfolgingsplanService @Inject constructor(
-    arbeidsoppgaveDAO: ArbeidsoppgaveDAO,
-    dokumentDAO: DokumentDAO,
-    kommentarDAO: KommentarDAO,
-    godkjenningerDAO: GodkjenningerDAO,
-    godkjentplanDAO: GodkjentplanDAO,
-    oppfolgingsplanDAO: OppfolgingsplanDAO,
-    tiltakDAO: TiltakDAO,
-    dialogmeldingService: DialogmeldingService,
-    pdlClient: PdlClient,
-    private val tilgangskontrollService: TilgangskontrollService
+    private val arbeidsoppgaveDAO: ArbeidsoppgaveDAO,
+    private val dokumentDAO: DokumentDAO,
+    private val kommentarDAO: KommentarDAO,
+    private val godkjenningerDAO: GodkjenningerDAO,
+    private val godkjentplanDAO: GodkjentplanDAO,
+    private val oppfolgingsplanDAO: OppfolgingsplanDAO,
+    private val tiltakDAO: TiltakDAO,
+    private val dialogmeldingService: error.NonExistentClass,
+    private val tilgangskontrollService: TilgangskontrollService,
+    private val dao: DokumentDAO
 ) {
-    private val oppfolgingsplanDAO: OppfolgingsplanDAO = oppfolgingsplanDAO
-
-    private val arbeidsoppgaveDAO: ArbeidsoppgaveDAO = arbeidsoppgaveDAO
-
-    private val godkjentplanDAO: GodkjentplanDAO = godkjentplanDAO
-
-    private val tiltakDAO: TiltakDAO = tiltakDAO
-
-    private val dialogmeldingService: DialogmeldingService = dialogmeldingService
-
-    private val pdlConsumer: PdlConsumer = pdlConsumer
-
-    private val godkjenningerDAO: GodkjenningerDAO = godkjenningerDAO
-
-    private val kommentarDAO: KommentarDAO = kommentarDAO
-
-    private val dokumentDAO: DokumentDAO = dokumentDAO
-
     fun arbeidsgiversOppfolgingsplanerPaFnr(
         lederFnr: String?,
         ansattFnr: String?,
         virksomhetsnummer: String
-    ): List<Oppfolgingsplan> {
+    ): List<OppfolgingsplanDTO> {
         val lederAktorId: String = pdlConsumer.aktorid(lederFnr)
         val ansattAktorId: String = pdlConsumer.aktorid(ansattFnr)
 
         if (!tilgangskontrollService.erNaermesteLederForSykmeldt(lederFnr, ansattFnr, virksomhetsnummer)) {
-            throw ForbiddenException("Ikke tilgang")
+            throw AccessDeniedException("Ikke tilgang")
         }
 
         return oppfolgingsplanDAO.oppfolgingsplanerKnyttetTilSykmeldtogVirksomhet(ansattAktorId, virksomhetsnummer)
@@ -67,7 +51,7 @@ class OppfolgingsplanService @Inject constructor(
             .collect(Collectors.toList<T>())
     }
 
-    fun arbeidstakersOppfolgingsplaner(innloggetFnr: String?): List<Oppfolgingsplan> {
+    fun arbeidstakersOppfolgingsplaner(innloggetFnr: String?): List<OppfolgingsplanDTO> {
         val innloggetAktorId: String = pdlConsumer.aktorid(innloggetFnr)
         return oppfolgingsplanDAO.oppfolgingsplanerKnyttetTilSykmeldt(innloggetAktorId).stream()
             .peek { oppfolgingsplan -> oppfolgingsplanDAO.oppdaterSistAksessert(oppfolgingsplan, innloggetAktorId) }
@@ -75,7 +59,7 @@ class OppfolgingsplanService @Inject constructor(
             .collect(Collectors.toList<T>())
     }
 
-    fun hentGodkjentOppfolgingsplan(oppfoelgingsdialogId: Long?): Oppfolgingsplan {
+    fun hentGodkjentOppfolgingsplan(oppfoelgingsdialogId: Long?): OppfolgingsplanDTO {
         return oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfoelgingsdialogId)
             .godkjentPlan(godkjentplanDAO.godkjentPlanByOppfolgingsplanId(oppfoelgingsdialogId))
     }
@@ -89,12 +73,12 @@ class OppfolgingsplanService @Inject constructor(
             pdlConsumer.aktorid(sykmeldtFnr)
 
         if (!tilgangskontrollService.kanOppretteOppfolgingsplan(sykmeldtFnr, innloggetFnr, virksomhetsnummer)) {
-            throw ForbiddenException("Ikke tilgang")
+            throw AccessDeniedException("Ikke tilgang")
         }
 
         if (parteneHarEkisterendeAktivOppfolgingsplan(sykmeldtAktoerId, virksomhetsnummer)) {
             log.warn("Kan ikke opprette en plan når det allerede eksisterer en aktiv plan mellom partene!")
-            throw ConflictException()
+            throw IllegalStateException()
         }
 
         return opprettDialog(sykmeldtAktoerId, sykmeldtFnr, virksomhetsnummer, innloggetAktoerId, innloggetFnr)
@@ -102,11 +86,11 @@ class OppfolgingsplanService @Inject constructor(
 
     @Transactional
     fun kopierOppfoelgingsdialog(oppfoelgingsdialogId: Long, innloggetFnr: String): Long {
-        val oppfolgingsplan: Oppfolgingsplan = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfoelgingsdialogId)
+        val oppfolgingsplan: OppfolgingsplanDTO = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfoelgingsdialogId)
         val innloggetAktoerId: String = pdlConsumer.aktorid(innloggetFnr)
 
         if (!tilgangskontrollService.brukerTilhorerOppfolgingsplan(innloggetFnr, oppfolgingsplan)) {
-            throw ForbiddenException()
+            throw AccessDeniedException()
         }
         val sykmeldtAktoerId: String = oppfolgingsplan.arbeidstaker.aktoerId
         val sykmeldtFnr: String =
@@ -116,7 +100,7 @@ class OppfolgingsplanService @Inject constructor(
 
         if (parteneHarEkisterendeAktivOppfolgingsplan(sykmeldtAktoerId, oppfolgingsplan.virksomhet.virksomhetsnummer)) {
             log.warn("Kan ikke opprette en plan når det allerede eksisterer en aktiv plan mellom partene!")
-            throw ConflictException()
+            throw IllegalStateException()
         }
 
         val nyOppfoelgingsdialogId = opprettDialog(
@@ -189,19 +173,19 @@ class OppfolgingsplanService @Inject constructor(
             }
     }
 
-    private fun erIkkeAvbruttOgIkkeUtgaatt(maybeGodkjentplan: Optional<GodkjentPlan>): Boolean {
+    private fun erIkkeAvbruttOgIkkeUtgaatt(maybeGodkjentplan: Optional<GodkjentPlanDTO>): Boolean {
         return maybeGodkjentplan.isPresent()
                 && maybeGodkjentplan.get().avbruttPlan.isEmpty()
                 && maybeGodkjentplan.get().gyldighetstidspunkt.tom.isAfter(LocalDate.now())
     }
 
-    private fun erIkkeFerdigVersjon(maybeGodkjentplan: Optional<GodkjentPlan>): Boolean {
+    private fun erIkkeFerdigVersjon(maybeGodkjentplan: Optional<GodkjentPlanDTO>): Boolean {
         return maybeGodkjentplan.isEmpty()
     }
 
     @Transactional
     fun delMedNav(oppfolgingsplanId: Long, innloggetFnr: String) {
-        val oppfoelgingsplan: Oppfolgingsplan = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
+        val oppfoelgingsplan: OppfolgingsplanDTO = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
         val innloggetAktoerId: String = pdlConsumer.aktorid(innloggetFnr)
         val deltMedNavTidspunkt = LocalDateTime.now()
 
@@ -214,7 +198,7 @@ class OppfolgingsplanService @Inject constructor(
 
     @Transactional
     fun delMedFastlege(oppfolgingsplanId: Long, innloggetFnr: String) {
-        val oppfolgingsplan: Oppfolgingsplan = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
+        val oppfolgingsplan: OppfolgingsplanDTO = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
 
         throwExceptionWithoutAccessToOppfolgingsplan(innloggetFnr, oppfolgingsplan)
 
@@ -222,7 +206,7 @@ class OppfolgingsplanService @Inject constructor(
         val arbeidstakerFnr: String = pdlConsumer.fnr(arbeidstakerAktoerId)
 
         val pdf: ByteArray = godkjentplanDAO.godkjentPlanByOppfolgingsplanId(oppfolgingsplanId)
-            .map(GodkjentPlan::dokumentUuid)
+            .map(GodkjentPlanDTO::dokumentUuid)
             .map(dokumentDAO::hent)
             .orElseThrow { RuntimeException("Finner ikke pdf for oppfølgingsplan med id $oppfolgingsplanId") }
 
@@ -233,7 +217,7 @@ class OppfolgingsplanService @Inject constructor(
 
     @Transactional
     fun nullstillGodkjenning(oppfolgingsplanId: Long, fnr: String) {
-        val oppfolgingsplan: Oppfolgingsplan = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
+        val oppfolgingsplan: OppfolgingsplanDTO = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
         val innloggetAktoerId: String = pdlConsumer.aktorid(fnr)
 
         throwExceptionWithoutAccessToOppfolgingsplan(fnr, oppfolgingsplan)
@@ -244,7 +228,7 @@ class OppfolgingsplanService @Inject constructor(
     }
 
     fun oppdaterSistInnlogget(oppfolgingsplanId: Long, fnr: String) {
-        val oppfolgingsplan: Oppfolgingsplan = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
+        val oppfolgingsplan: OppfolgingsplanDTO = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
         val innloggetAktoerId: String = pdlConsumer.aktorid(fnr)
 
         throwExceptionWithoutAccessToOppfolgingsplan(fnr, oppfolgingsplan)
@@ -254,7 +238,7 @@ class OppfolgingsplanService @Inject constructor(
 
     @Transactional
     fun avbrytPlan(oppfolgingsplanId: Long, innloggetFnr: String): Long {
-        val oppfolgingsplan: Oppfolgingsplan = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
+        val oppfolgingsplan: OppfolgingsplanDTO = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
         val innloggetAktoerId: String = pdlConsumer.aktorid(innloggetFnr)
 
         throwExceptionWithoutAccessToOppfolgingsplan(innloggetFnr, oppfolgingsplan)
@@ -272,13 +256,13 @@ class OppfolgingsplanService @Inject constructor(
     }
 
     fun harBrukerTilgangTilDialog(oppfolgingsplanId: Long, fnr: String): Boolean {
-        val oppfolgingsplan: Oppfolgingsplan = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
+        val oppfolgingsplan: OppfolgingsplanDTO = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfolgingsplanId)
         return tilgangskontrollService.brukerTilhorerOppfolgingsplan(fnr, oppfolgingsplan)
     }
 
-    private fun throwExceptionWithoutAccessToOppfolgingsplan(fnr: String, oppfolgingsplan: Oppfolgingsplan) {
+    private fun throwExceptionWithoutAccessToOppfolgingsplan(fnr: String, oppfolgingsplan: OppfolgingsplanDTO) {
         if (!tilgangskontrollService.brukerTilhorerOppfolgingsplan(fnr, oppfolgingsplan)) {
-            throw ForbiddenException()
+            throw AccessDeniedException()
         }
     }
 
