@@ -73,7 +73,7 @@ data class GodkjenningDTO(
 )
 
 data class ArbeidsoppgaveDTO(
-    val id: Long,
+    val id: Long?,
     val oppfoelgingsdialogId: Long,
     val navn: String?,
     val erVurdertAvSykmeldt: Boolean,

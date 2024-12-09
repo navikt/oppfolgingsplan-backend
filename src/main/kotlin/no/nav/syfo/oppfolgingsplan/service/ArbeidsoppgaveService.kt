@@ -1,90 +1,93 @@
 package no.nav.syfo.oppfolgingsplan.service
 
-import jakarta.ws.rs.ForbiddenException
+import no.nav.syfo.metric.Metrikk
+import no.nav.syfo.oppfolgingsplan.domain.ArbeidsoppgaveDTO
+import no.nav.syfo.oppfolgingsplan.repository.dao.ArbeidsoppgaveDAO
+import no.nav.syfo.oppfolgingsplan.repository.dao.GodkjenningerDAO
+import no.nav.syfo.oppfolgingsplan.repository.dao.OppfolgingsplanDAO
+import no.nav.syfo.oppfolgingsplan.util.eksisterendeArbeidsoppgaveHoererTilDialog
+import no.nav.syfo.oppfolgingsplan.util.kanEndreElement
+import no.nav.syfo.pdl.PdlClient
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import javax.inject.Inject
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.server.ResponseStatusException
 
 @Service
-class ArbeidsoppgaveService (
-    pdlConsumer: PdlConsumer,
-    arbeidsoppgaveDAO: ArbeidsoppgaveDAO,
-    godkjenningerDAO: GodkjenningerDAO,
-    metrikk: Metrikk,
-    oppfolgingsplanDAO: OppfolgingsplanDAO,
+class ArbeidsoppgaveService(
+    private val pdlClient: PdlClient,
+    private val arbeidsoppgaveDAO: ArbeidsoppgaveDAO,
+    private val godkjenningerDAO: GodkjenningerDAO,
+    private val metrikk: Metrikk,
+    private val oppfolgingsplanDAO: OppfolgingsplanDAO,
     private val tilgangskontrollService: TilgangskontrollService
 ) {
-    private val pdlConsumer: PdlConsumer = pdlConsumer
-    private val arbeidsoppgaveDAO: ArbeidsoppgaveDAO = arbeidsoppgaveDAO
-    private val godkjenningerDAO: GodkjenningerDAO = godkjenningerDAO
-    private val metrikk: Metrikk = metrikk
-    private val oppfolgingsplanDAO: OppfolgingsplanDAO = oppfolgingsplanDAO
 
     @Transactional
-    @Throws(ConflictException::class)
-    fun lagreArbeidsoppgave(oppfoelgingsdialogId: Long?, arbeidsoppgave: Arbeidsoppgave, fnr: String): Long {
-        val oppfolgingsplan: Oppfolgingsplan = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfoelgingsdialogId)
-        val innloggetAktoerId: String = pdlConsumer.aktorid(fnr)
+    @Throws(ResponseStatusException::class)
+    fun lagreArbeidsoppgave(oppfoelgingsdialogId: Long, arbeidsoppgave: ArbeidsoppgaveDTO, innloggetFnr: String): Long {
+        val oppfolgingsplan = oppfolgingsplanDAO.finnOppfolgingsplanMedId(oppfoelgingsdialogId)
+            ?: throw IllegalArgumentException("Fant ikke oppfølgingsplan")
+        val innloggetAktoerId = pdlClient.aktorid(innloggetFnr)
 
         if (!eksisterendeArbeidsoppgaveHoererTilDialog(
                 arbeidsoppgave.id,
                 arbeidsoppgaveDAO.arbeidsoppgaverByOppfoelgingsdialogId(oppfoelgingsdialogId)
-            )
-            || !tilgangskontrollService.brukerTilhorerOppfolgingsplan(fnr, oppfolgingsplan)
+            ) || !tilgangskontrollService.brukerTilhorerOppfolgingsplan(innloggetFnr, oppfolgingsplan)
         ) {
-            throw ForbiddenException("Ikke tilgang")
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Ikke tilgang: Arbeidsoppave hører ikke til dialog")
         }
 
-        if (godkjenningerDAO.godkjenningerByOppfoelgingsdialogId(oppfoelgingsdialogId).stream()
-                .anyMatch { pGodkjenning -> pGodkjenning.godkjent }
-        ) {
-            throw ConflictException()
+        if (godkjenningerDAO.godkjenningerByOppfoelgingsdialogId(oppfoelgingsdialogId).any { it.godkjent }) {
+            throw ResponseStatusException(HttpStatus.CONFLICT, "Conflict: Already godkjent")
         }
 
         oppfolgingsplanDAO.sistEndretAv(oppfoelgingsdialogId, innloggetAktoerId)
-        if (arbeidsoppgave.id == null) {
+        return if (arbeidsoppgave.id == null) {
             metrikk.tellHendelse("lagre_arbeidsoppgave_ny")
-            return arbeidsoppgaveDAO.create(
-                arbeidsoppgave
-                    .oppfoelgingsdialogId(oppfoelgingsdialogId)
-                    .erVurdertAvSykmeldt(oppfolgingsplan.arbeidstaker.aktoerId.equals(innloggetAktoerId))
-                    .opprettetAvAktoerId(innloggetAktoerId)
-                    .sistEndretAvAktoerId(innloggetAktoerId)
-            ).id
+            arbeidsoppgaveDAO.create(
+                arbeidsoppgave.copy(
+                    oppfoelgingsdialogId = oppfoelgingsdialogId,
+                    erVurdertAvSykmeldt = oppfolgingsplan.arbeidstaker.fnr == innloggetFnr,
+                    opprettetAvAktoerId = innloggetAktoerId,
+                    sistEndretAvAktoerId = innloggetAktoerId
+                )
+            ).id ?: throw IllegalStateException("ID should not be null")
         } else {
             metrikk.tellHendelse("lagre_arbeidsoppgave_eksisterende")
-            return arbeidsoppgaveDAO.update(
-                arbeidsoppgave
-                    .oppfoelgingsdialogId(oppfoelgingsdialogId)
-                    .erVurdertAvSykmeldt(
-                        oppfolgingsplan.arbeidstaker.aktoerId.equals(innloggetAktoerId) || arbeidsoppgaveDAO.finnArbeidsoppgave(
-                            arbeidsoppgave.id
-                        ).erVurdertAvSykmeldt
-                    )
-                    .sistEndretAvAktoerId(innloggetAktoerId)
-            ).id
+            arbeidsoppgaveDAO.update(
+                arbeidsoppgave.copy(
+                    oppfoelgingsdialogId = oppfoelgingsdialogId,
+                    erVurdertAvSykmeldt = oppfolgingsplan.arbeidstaker.fnr == innloggetFnr || arbeidsoppgaveDAO.finnArbeidsoppgave(
+                        arbeidsoppgave.id
+                    )!!.erVurdertAvSykmeldt,
+                    sistEndretAvAktoerId = innloggetAktoerId
+                )
+            ).id ?: throw IllegalStateException("ID should not be null")
         }
     }
 
     @Transactional
-    @Throws(ConflictException::class)
-    fun slettArbeidsoppgave(arbeidsoppgaveId: Long?, fnr: String) {
-        val innloggetAktoerId: String = pdlConsumer.aktorid(fnr)
-        val arbeidsoppgave: Arbeidsoppgave = arbeidsoppgaveDAO.finnArbeidsoppgave(arbeidsoppgaveId)
-        val oppfolgingsplan: Oppfolgingsplan =
-            oppfolgingsplanDAO.finnOppfolgingsplanMedId(arbeidsoppgave.oppfoelgingsdialogId)
+    @Throws(ResponseStatusException::class)
+    fun slettArbeidsoppgave(arbeidsoppgaveId: Long, innloggetFnr: String) {
+        val innloggetAktoerId = pdlClient.aktorid(innloggetFnr)
+        val arbeidsoppgave = arbeidsoppgaveDAO.finnArbeidsoppgave(arbeidsoppgaveId)
+            ?: throw IllegalArgumentException("Fant ikke arbeidsoppgave")
+        val oppfolgingsplan = oppfolgingsplanDAO.finnOppfolgingsplanMedId(arbeidsoppgave.oppfoelgingsdialogId)
+            ?: throw IllegalArgumentException("Fant ikke oppfølgingsplan")
 
-        if (!tilgangskontrollService.brukerTilhorerOppfolgingsplan(fnr, oppfolgingsplan) || !kanEndreElement(
-                innloggetAktoerId,
+        if (!tilgangskontrollService.brukerTilhorerOppfolgingsplan(innloggetFnr, oppfolgingsplan) || !kanEndreElement(
+                innloggetFnr,
                 oppfolgingsplan.arbeidstaker.aktoerId,
                 arbeidsoppgave.opprettetAvAktoerId
             )
         ) {
-            throw ForbiddenException("Ikke tilgang")
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Ikke tilgang")
         }
-        if (godkjenningerDAO.godkjenningerByOppfoelgingsdialogId(arbeidsoppgave.oppfoelgingsdialogId).stream()
-                .anyMatch { pGodkjenning -> pGodkjenning.godkjent }
+        if (godkjenningerDAO.godkjenningerByOppfoelgingsdialogId(arbeidsoppgave.oppfoelgingsdialogId)
+                .any { it.godkjent }
         ) {
-            throw ConflictException()
+            throw ResponseStatusException(HttpStatus.CONFLICT, "Conflict: Already godkjent")
         }
 
         oppfolgingsplanDAO.sistEndretAv(arbeidsoppgave.oppfoelgingsdialogId, innloggetAktoerId)
