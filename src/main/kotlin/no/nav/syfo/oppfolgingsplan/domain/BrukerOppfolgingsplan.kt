@@ -76,3 +76,7 @@ fun BrukerOppfolgingsplan.populerArbeidstakersStillinger(arbeidsforhold: List<St
         .filter { stilling -> stilling.orgnummer == virksomhet.virksomhetsnummer }
         .map { stilling -> Stilling(stilling.yrke, stilling.prosent) }
 }
+
+fun List<BrukerOppfolgingsplan>.toVirksomhetsnummer(): List<String> {
+    return map { plan -> plan.virksomhet.virksomhetsnummer }.distinct()
+}
