@@ -89,8 +89,8 @@ class NarmesteLederClient(
 
     @Cacheable(
         value = ["erNaermesteLederForAnsatt"],
-        key = "#naermesteLederFnr",
-        condition = "#naermesteLederFnr != null"
+        key = "{#naermesteLederFnr, #ansattFnr}",
+        condition = "#naermesteLederFnr != null && #ansattFnr != null"
     )
     fun erNaermesteLederForAnsatt(naermesteLederFnr: String, ansattFnr: String): Boolean {
         val ansatteFnr = ansatte(naermesteLederFnr)?.map { it.fnr } ?: emptyList()
