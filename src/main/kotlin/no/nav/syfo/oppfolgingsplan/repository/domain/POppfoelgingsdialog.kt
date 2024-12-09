@@ -33,7 +33,7 @@ fun POppfoelgingsdialog.toOppfolgingsplanDTO(): OppfolgingsplanDTO {
         uuid = this.uuid,
         opprettet = this.created!!,
         sistEndretAvAktoerId = this.sistEndretAv,
-        sistEndretAvFnr = this.sistEndretAvFnr,
+        sistEndretAvFnr = this.sistEndretAvFnr!!,
         opprettetAvAktoerId = this.opprettetAv,
         opprettetAvFnr = this.opprettetAvFnr,
         sistEndretDato = this.sistEndret,
@@ -55,7 +55,6 @@ fun POppfoelgingsdialog.toOppfolgingsplanDTO(): OppfolgingsplanDTO {
             aktoerId = null,
             epost = null,
             fnr = null,
-            navn = null,
             tlf = null
         ),
         arbeidstaker = PersonDTO(
@@ -66,7 +65,6 @@ fun POppfoelgingsdialog.toOppfolgingsplanDTO(): OppfolgingsplanDTO {
             sistInnlogget = this.sisteInnloggingSykmeldt,
             samtykke = this.samtykkeSykmeldt,
             epost = null,
-            navn = null,
             tlf = null
         ),
         tiltakListe = emptyList(),

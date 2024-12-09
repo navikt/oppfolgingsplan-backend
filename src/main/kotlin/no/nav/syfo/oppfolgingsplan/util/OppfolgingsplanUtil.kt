@@ -42,17 +42,15 @@ fun erGodkjentAvAnnenPart(oppfolgingsplan: OppfolgingsplanDTO, aktoerId: String)
 
 fun annenPartHarGjortEndringerImellomtiden(oppfolgingsplan: OppfolgingsplanDTO, innloggetAktoerId: String): Boolean {
     return if (erArbeidstakeren(oppfolgingsplan, innloggetAktoerId)) {
+        val sistAksessert = oppfolgingsplan.arbeidstaker.sistAksessert
         oppfolgingsplan.sistEndretArbeidsgiver != null &&
-            oppfolgingsplan.arbeidstaker.sistAksessert != null &&
-            oppfolgingsplan.arbeidstaker.sistAksessert.isBefore(
-                oppfolgingsplan.sistEndretArbeidsgiver
-            )
+            sistAksessert != null &&
+            sistAksessert.isBefore(oppfolgingsplan.sistEndretArbeidsgiver)
     } else {
+        val sistAksessert = oppfolgingsplan.arbeidsgiver.sistAksessert
         oppfolgingsplan.sistEndretSykmeldt != null &&
-            oppfolgingsplan.arbeidsgiver.sistAksessert != null &&
-            oppfolgingsplan.arbeidsgiver.sistAksessert.isBefore(
-                oppfolgingsplan.sistEndretSykmeldt
-            )
+            sistAksessert != null &&
+            sistAksessert.isBefore(oppfolgingsplan.sistEndretSykmeldt)
     }
 }
 
@@ -108,7 +106,7 @@ fun eksisterendeArbeidsoppgaveHoererTilDialog(
         arbeidsoppgaveListe.any { arbeidsoppgave -> arbeidsoppgave.id == arbeidsoppgaveId }
 }
 
-fun kanEndreElement(innloggetAktoerId: String, arbeidstakerAktoerId: String, opprettetAvAktoerId: String): Boolean {
+fun kanEndreElement(innloggetAktoerId: String, arbeidstakerAktoerId: String?, opprettetAvAktoerId: String?): Boolean {
     return when {
         opprettetAvAktoerId == innloggetAktoerId -> {
             true
@@ -117,6 +115,7 @@ fun kanEndreElement(innloggetAktoerId: String, arbeidstakerAktoerId: String, opp
         innloggetAktoerId != arbeidstakerAktoerId && opprettetAvAktoerId != arbeidstakerAktoerId -> {
             true
         }
+
         else -> false
     }
 }

@@ -128,13 +128,16 @@ data class KommentarDTO(
 
 data class PersonDTO(
     val navn: String = " ",
-    val fnr: String,
+    val fnr: String?,
     val epost: String? = null,
     val tlf: String? = null,
-    val sistInnlogget: LocalDateTime? = null,
     val samtykke: Boolean? = null,
     val evaluering: EvalueringDTO? = null,
     var stillinger: List<Stilling> = ArrayList(),
+    var sistInnlogget: LocalDateTime? = null,
+    var sisteEndring: LocalDateTime? = null,
+    var sistAksessert: LocalDateTime? = null,
+    val aktoerId: String? = null
 )
 
 fun OppfolgingsplanDTO.getStatus(): Status {

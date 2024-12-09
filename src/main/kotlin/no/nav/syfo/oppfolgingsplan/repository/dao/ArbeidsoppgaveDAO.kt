@@ -39,7 +39,7 @@ class ArbeidsoppgaveDAO(
     }
 
     @Suppress("LongMethod")
-    fun create(arbeidsoppgave: ArbeidsoppgaveDTO): ArbeidsoppgaveDTO {
+    fun create(arbeidsoppgave: ArbeidsoppgaveDTO): Long {
         val arbeidsoppgaveId =
             jdbcTemplate.queryForObject("SELECT NEXTVAL('ARBEIDSOPPGAVE_ID_SEQ')", Long::class.java)!!
         val namedParameters = MapSqlParameterSource()
@@ -101,10 +101,10 @@ class ArbeidsoppgaveDAO(
         """
 
         namedParameterJdbcTemplate.update(sqlQuery, namedParameters)
-        return arbeidsoppgave.copy(id = arbeidsoppgaveId)
+        return arbeidsoppgaveId
     }
 
-    fun update(arbeidsoppgave: ArbeidsoppgaveDTO): ArbeidsoppgaveDTO {
+    fun update(arbeidsoppgave: ArbeidsoppgaveDTO): Long {
         val namedParameters = MapSqlParameterSource()
             .addValue("arbeidsoppgave_id", arbeidsoppgave.id)
             .addValue("navn", sanitizeUserInput(arbeidsoppgave.navn))
@@ -143,7 +143,7 @@ class ArbeidsoppgaveDAO(
             namedParameters
         )
 
-        return arbeidsoppgave
+        return arbeidsoppgave.id!!
     }
 
     fun delete(id: Long) {

@@ -23,6 +23,7 @@ class ArbeidsoppgaveService(
     private val tilgangskontrollService: TilgangskontrollService
 ) {
 
+    @Suppress("ThrowsCount")
     @Transactional
     @Throws(ResponseStatusException::class)
     fun lagreArbeidsoppgave(oppfoelgingsdialogId: Long, arbeidsoppgave: ArbeidsoppgaveDTO, innloggetFnr: String): Long {
@@ -52,18 +53,19 @@ class ArbeidsoppgaveService(
                     opprettetAvAktoerId = innloggetAktoerId,
                     sistEndretAvAktoerId = innloggetAktoerId
                 )
-            ).id ?: throw IllegalStateException("ID should not be null")
+            )
         } else {
             metrikk.tellHendelse("lagre_arbeidsoppgave_eksisterende")
             arbeidsoppgaveDAO.update(
                 arbeidsoppgave.copy(
                     oppfoelgingsdialogId = oppfoelgingsdialogId,
-                    erVurdertAvSykmeldt = oppfolgingsplan.arbeidstaker.fnr == innloggetFnr || arbeidsoppgaveDAO.finnArbeidsoppgave(
-                        arbeidsoppgave.id
-                    )!!.erVurdertAvSykmeldt,
+                    erVurdertAvSykmeldt = oppfolgingsplan.arbeidstaker.fnr == innloggetFnr ||
+                        arbeidsoppgaveDAO.finnArbeidsoppgave(
+                            arbeidsoppgave.id
+                        )!!.erVurdertAvSykmeldt,
                     sistEndretAvAktoerId = innloggetAktoerId
                 )
-            ).id ?: throw IllegalStateException("ID should not be null")
+            )
         }
     }
 
