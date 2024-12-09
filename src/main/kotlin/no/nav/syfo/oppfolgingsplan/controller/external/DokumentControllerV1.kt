@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4", "acr=idporten-loa-high"], combineWithOr = true)
-@RequestMapping(value = ["/api/v2/dokument/{oppfolgingsplanId}/ekstern"])
+@RequestMapping(value = ["/api/v1/dokument/{oppfolgingsplanId}/ekstern"])
 class DokumentControllerV1 @Inject constructor(
     private val contextHolder: TokenValidationContextHolder,
     private val pdfService: PdfService,

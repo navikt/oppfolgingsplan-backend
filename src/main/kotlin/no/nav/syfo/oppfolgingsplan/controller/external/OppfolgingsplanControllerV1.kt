@@ -28,7 +28,7 @@ import javax.inject.Inject
 @Suppress("LongParameterList")
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4", "acr=idporten-loa-high"], combineWithOr = true)
-@RequestMapping(value = ["/api/v2/oppfolgingsplan/actions/{id}"])
+@RequestMapping(value = ["/api/v1/oppfolgingsplan/actions/{id}"])
 class OppfolgingsplanControllerV1 @Inject constructor(
     private val metrikk: Metrikk,
     private val contextHolder: TokenValidationContextHolder,

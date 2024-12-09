@@ -6,10 +6,12 @@ import no.nav.syfo.aareg.service.ArbeidsforholdService
 import no.nav.syfo.auth.tokenx.TokenXUtil
 import no.nav.syfo.auth.tokenx.TokenXUtil.TokenXIssuer.TOKENX
 import no.nav.syfo.auth.tokenx.TokenXUtil.fnrFromIdportenTokenX
-import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.narmesteleder.NarmesteLederClient
+import no.nav.syfo.oppfolgingsplan.domain.BrukerOppfolgingsplan
+import no.nav.syfo.oppfolgingsplan.domain.populerArbeidstakersStillinger
+import no.nav.syfo.oppfolgingsplan.domain.populerPlanerMedAvbruttPlanListe
+import no.nav.syfo.oppfolgingsplan.domain.toBrukerOppfolgingsplan
 import no.nav.syfo.oppfolgingsplan.service.OppfolgingsplanService
-import no.nav.syfo.pdl.PdlClient
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
@@ -19,16 +21,14 @@ import javax.inject.Inject
 
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4", "acr=idporten-loa-high"], combineWithOr = true)
-@RequestMapping(value = ["/api/v2/arbeidsgiver/oppfolgingsplaner"])
+@RequestMapping(value = ["/api/v1/arbeidsgiver/oppfolgingsplaner"])
 class ArbeidsgiverOppfolgingsplanControllerV1 @Inject constructor(
     private val contextHolder: TokenValidationContextHolder,
-    private val narmesteLederClient: NarmesteLederClient,
     private val oppfolgingsplanService: OppfolgingsplanService,
     private val arbeidsforholdService: ArbeidsforholdService,
-    private val pdlClient: PdlClient,
-    private val metrikk: Metrikk,
     @Value("\${oppfolgingsplan.frontend.client.id}")
     private val oppfolgingsplanClientId: String,
+    private val narmesteLederClient: NarmesteLederClient,
 ) {
 
     @GetMapping(produces = [APPLICATION_JSON_VALUE])
@@ -41,13 +41,12 @@ class ArbeidsgiverOppfolgingsplanControllerV1 @Inject constructor(
             .value
         val arbeidsgiversOppfolgingsplaner =
             oppfolgingsplanService.arbeidsgiversOppfolgingsplanerPaFnr(innloggetIdent, personident, virksomhetsnummer)
-        val liste = arbeidsgiversOppfolgingsplaner.map { it.toBrukerOppfolgingsplan(pdlConsumer) }
-        liste.forEach { plan -> plan.populerPlanerMedAvbruttPlanListe(liste) }
+                .map { it.toBrukerOppfolgingsplan() }
+        arbeidsgiversOppfolgingsplaner.forEach { plan -> plan.populerPlanerMedAvbruttPlanListe(arbeidsgiversOppfolgingsplaner) }
         val arbeidsforhold =
             arbeidsforholdService.arbeidstakersStillingerForOrgnummer(personident, listOf(virksomhetsnummer))
-        liste.forEach { plan -> plan.populerArbeidstakersStillinger(arbeidsforhold) }
-        metrikk.tellHendelse("hent_oppfolgingsplan_ag")
-        return liste
+        arbeidsgiversOppfolgingsplaner.forEach { plan -> plan.populerArbeidstakersStillinger(arbeidsforhold) }
+        return arbeidsgiversOppfolgingsplaner
     }
 
     @PostMapping(consumes = [APPLICATION_JSON_VALUE], produces = [APPLICATION_JSON_VALUE])
@@ -56,13 +55,12 @@ class ArbeidsgiverOppfolgingsplanControllerV1 @Inject constructor(
             .fnrFromIdportenTokenX()
             .value
         val sykmeldtFnr = opprettOppfolgingsplan.sykmeldtFnr
-        return if (narmesteLederConsumer.erNaermesteLederForAnsatt(innloggetFnr, sykmeldtFnr)) {
+        return if (narmesteLederClient.erNaermesteLederForAnsatt(innloggetFnr, sykmeldtFnr)) {
             val id = oppfolgingsplanService.opprettOppfolgingsplan(
                 innloggetFnr,
                 opprettOppfolgingsplan.virksomhetsnummer,
                 sykmeldtFnr
             )
-            metrikk.tellHendelse("opprett_oppfolgingsplan_ag")
             id
         } else {
             throw AccessDeniedException("Innlogget bruker er ikke nærmeste leder for sykmeldt")

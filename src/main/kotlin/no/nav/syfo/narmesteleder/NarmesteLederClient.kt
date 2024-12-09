@@ -34,7 +34,7 @@ class NarmesteLederClient(
         val issuerToken = TokenUtil.getIssuerToken(contextHolder, TokenXUtil.TokenXIssuer.TOKENX)
         val exchangedToken = tokenDingsConsumer.exchangeToken(issuerToken, targetApp)
         try {
-            val response = getResponse(
+            val response = getNarmestelederRelasjoner(
                 fnr = ansattFnr,
                 accessToken = exchangedToken
             )
@@ -51,7 +51,7 @@ class NarmesteLederClient(
     }
 
     @Cacheable(
-        value = ["aktive_ansatte"],
+        value = ["aktiv_narmeste_leder"],
         key = "{#ansattFnr, #virksomhetsnummer}",
         condition = "{#ansattFnr != null, #virksomhetsnummer != null}"
     )
@@ -74,7 +74,20 @@ class NarmesteLederClient(
         }
     }
 
-    private fun headers(fnr: String, accessToken: String): HttpEntity<String> {
+    @Cacheable(value = ["narmesteleder_ansatte"], key = "#fnr", condition = "#fnr != null")
+    fun ansatte(fnr: String): List<Ansatt>? {
+        val issuerToken = TokenUtil.getIssuerToken(contextHolder, TokenXUtil.TokenXIssuer.TOKENX)
+        val exchangedToken = tokenDingsConsumer.exchangeToken(issuerToken, targetApp)
+
+        val response: ResponseEntity<Array<NarmesteLederRelasjonDTO>> = getAktiveAnsatte(fnr, exchangedToken)
+        return if (response.statusCode.is2xxSuccessful) {
+            response.body?.map { Ansatt(it.arbeidstakerPersonIdentNumber, it.virksomhetsnummer) }
+        } else {
+            throw NarmesteLederException("Error fetching ansatte: ${response.statusCode}")
+        }
+    }
+
+    private fun headersForSykmeldt(fnr: String, accessToken: String): HttpEntity<String> {
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON
         headers[HttpHeaders.AUTHORIZATION] = bearerHeader(accessToken)
@@ -83,14 +96,35 @@ class NarmesteLederClient(
         return HttpEntity(headers)
     }
 
-    private fun getResponse(
+    private fun headersForNarmesteLeder(fnr: String, accessToken: String): HttpEntity<String> {
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_JSON
+        headers[HttpHeaders.AUTHORIZATION] = bearerHeader(accessToken)
+        headers.add("Narmeste-Leder-Fnr", fnr)
+        headers[NAV_CALL_ID_HEADER] = createCallId()
+        return HttpEntity(headers)
+    }
+
+    private fun getNarmestelederRelasjoner(
         fnr: String,
         accessToken: String
     ): ResponseEntity<Array<NarmesteLederRelasjonDTO>> {
         return RestTemplate().exchange(
             "$baseUrl/api/selvbetjening/v1/narmestelederrelasjoner",
             HttpMethod.GET,
-            headers(fnr, accessToken),
+            headersForSykmeldt(fnr, accessToken),
+            Array<NarmesteLederRelasjonDTO>::class.java,
+        )
+    }
+
+    private fun getAktiveAnsatte(
+        fnr: String,
+        accessToken: String
+    ): ResponseEntity<Array<NarmesteLederRelasjonDTO>> {
+        return RestTemplate().exchange(
+            "$baseUrl/leder/narmesteleder/aktive",
+            HttpMethod.GET,
+            headersForNarmesteLeder(fnr, accessToken),
             Array<NarmesteLederRelasjonDTO>::class.java,
         )
     }
@@ -104,3 +138,10 @@ class NarmesteLederClient(
         }
     }
 }
+
+data class Ansatt(
+    var fnr: String?,
+    var virksomhetsnummer: String?
+)
+
+class NarmesteLederException(message: String) : RuntimeException(message)

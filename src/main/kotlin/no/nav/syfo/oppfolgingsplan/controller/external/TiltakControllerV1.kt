@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4", "acr=idporten-loa-high"], combineWithOr = true)
-@RequestMapping(value = ["/api/v2/tiltak/actions/{id}"])
+@RequestMapping(value = ["/api/v1/tiltak/actions/{id}"])
 class TiltakControllerV1 @Inject constructor(
     private val contextHolder: TokenValidationContextHolder,
     private val kommentarService: KommentarService,

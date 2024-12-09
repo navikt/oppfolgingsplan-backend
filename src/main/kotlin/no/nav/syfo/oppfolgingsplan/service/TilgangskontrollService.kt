@@ -1,21 +1,19 @@
 package no.nav.syfo.oppfolgingsplan.service
 
-import no.nav.syfo.domain.Oppfolgingsplan
-import no.nav.syfo.narmesteleder.NarmesteLederConsumer
-import no.nav.syfo.pdl.PdlConsumer
+import no.nav.syfo.narmesteleder.NarmesteLederClient
+import no.nav.syfo.oppfolgingsplan.domain.OppfolgingsplanDTO
+import no.nav.syfo.pdl.PdlClient
 import org.springframework.stereotype.Service
-import javax.inject.Inject
 
 @Service
 class TilgangskontrollService(
-    narmesteLederConsumer: NarmesteLederConsumer,
-    pdlConsumer: PdlConsumer
+    private val narmesteLederClient: NarmesteLederClient,
+    private val pdlClient: PdlClient
 ) {
-    private val narmesteLederConsumer: NarmesteLederConsumer = narmesteLederConsumer
-    private val pdlConsumer: PdlConsumer = pdlConsumer
 
-    fun brukerTilhorerOppfolgingsplan(fnr: String, oppfolgingsplan: Oppfolgingsplan): Boolean {
-        val arbeidstakersFnr: String = pdlConsumer.fnr(oppfolgingsplan.arbeidstaker.aktoerId)
+    fun brukerTilhorerOppfolgingsplan(fnr: String, oppfolgingsplan: OppfolgingsplanDTO): Boolean {
+        requireNotNull(oppfolgingsplan.arbeidstaker.aktoerId) { "AktoerId for arbeidstaker mangler" }
+        val arbeidstakersFnr: String = pdlClient.fnr(oppfolgingsplan.arbeidstaker.aktoerId)
         return arbeidstakersFnr == fnr
                 || erNaermesteLederForSykmeldt(fnr, arbeidstakersFnr, oppfolgingsplan.virksomhet.virksomhetsnummer)
     }
@@ -26,11 +24,11 @@ class TilgangskontrollService(
     }
 
     fun erNaermesteLederForSykmeldt(lederFnr: String?, sykmeldtFnr: String?, virksomhetsnummer: String): Boolean {
-        return narmesteLederConsumer.ansatte(lederFnr).stream()
+        return narmesteLederClient.ansatte(lederFnr).stream()
             .anyMatch { ansatt -> virksomhetsnummer == ansatt.virksomhetsnummer && ansatt.fnr.equals(sykmeldtFnr) }
     }
 
     private fun aktoerHarNaermesteLederHosVirksomhet(fnr: String, virksomhetsnummer: String): Boolean {
-        return narmesteLederConsumer.narmesteLeder(fnr, virksomhetsnummer).isPresent()
+        return narmesteLederClient.aktivNarmesteLederIVirksomhet(fnr, virksomhetsnummer) != null
     }
 }

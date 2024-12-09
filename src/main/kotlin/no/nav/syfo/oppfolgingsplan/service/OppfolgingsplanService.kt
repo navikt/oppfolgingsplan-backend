@@ -9,6 +9,7 @@ import no.nav.syfo.oppfolgingsplan.repository.dao.GodkjentplanDAO
 import no.nav.syfo.oppfolgingsplan.repository.dao.KommentarDAO
 import no.nav.syfo.oppfolgingsplan.repository.dao.OppfolgingsplanDAO
 import no.nav.syfo.oppfolgingsplan.repository.dao.TiltakDAO
+import no.nav.syfo.pdl.PdlClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -30,15 +31,15 @@ class OppfolgingsplanService @Inject constructor(
     private val tiltakDAO: TiltakDAO,
     private val dialogmeldingService: error.NonExistentClass,
     private val tilgangskontrollService: TilgangskontrollService,
-    private val dao: DokumentDAO
+    private val pdlClient: PdlClient
 ) {
     fun arbeidsgiversOppfolgingsplanerPaFnr(
-        lederFnr: String?,
-        ansattFnr: String?,
+        lederFnr: String,
+        ansattFnr: String,
         virksomhetsnummer: String
     ): List<OppfolgingsplanDTO> {
-        val lederAktorId: String = pdlConsumer.aktorid(lederFnr)
-        val ansattAktorId: String = pdlConsumer.aktorid(ansattFnr)
+        val lederAktorId: String = pdlClient.aktorid(lederFnr)
+        val ansattAktorId: String = pdlClient.aktorid(ansattFnr)
 
         if (!tilgangskontrollService.erNaermesteLederForSykmeldt(lederFnr, ansattFnr, virksomhetsnummer)) {
             throw AccessDeniedException("Ikke tilgang")

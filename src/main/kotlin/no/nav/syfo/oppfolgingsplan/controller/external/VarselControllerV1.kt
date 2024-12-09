@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @RestController
 @ProtectedWithClaims(issuer = TOKENX, claimMap = ["acr=Level4"])
-@RequestMapping(value = ["/api/v2/varsel"])
+@RequestMapping(value = ["/api/v1/varsel"])
 class VarselControllerV1 @Inject constructor(
     private val metrikk: Metrikk,
     private val contextHolder: TokenValidationContextHolder,

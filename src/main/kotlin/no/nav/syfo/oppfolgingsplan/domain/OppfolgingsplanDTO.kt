@@ -1,5 +1,6 @@
 package no.nav.syfo.oppfolgingsplan.domain
 
+import no.nav.syfo.aareg.model.Stilling
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -8,7 +9,7 @@ data class OppfolgingsplanDTO(
     val uuid: String,
     val opprettet: LocalDateTime,
     val sistEndretAvAktoerId: String?,
-    val sistEndretAvFnr: String?,
+    val sistEndretAvFnr: String,
     val opprettetAvAktoerId: String?,
     val opprettetAvFnr: String?,
     val sistEndretDato: LocalDateTime?,
@@ -54,6 +55,7 @@ data class GyldighetstidspunktDTO(
 )
 
 data class AvbruttplanDTO(
+    var id: Long? = null,
     val avAktoerId: String?,
     val tidspunkt: LocalDateTime?,
     val oppfoelgingsdialogId: Long?
@@ -125,15 +127,14 @@ data class KommentarDTO(
 )
 
 data class PersonDTO(
-    val navn: String?,
-    val aktoerId: String?,
-    val fnr: String?,
-    val epost: String?,
-    val tlf: String?,
-    val sistInnlogget: LocalDateTime?,
-    val sisteEndring: LocalDateTime?,
-    val sistAksessert: LocalDateTime?,
-    val samtykke: Boolean?
+    val navn: String = " ",
+    val fnr: String,
+    val epost: String? = null,
+    val tlf: String? = null,
+    val sistInnlogget: LocalDateTime? = null,
+    val samtykke: Boolean? = null,
+    val evaluering: EvalueringDTO? = null,
+    var stillinger: List<Stilling> = ArrayList(),
 )
 
 fun OppfolgingsplanDTO.getStatus(): Status {
@@ -144,9 +145,38 @@ fun OppfolgingsplanDTO.getStatus(): Status {
         else -> Status.UNDER_ARBEID
     }
 }
+
 enum class Status {
     AVBRUTT,
     UTDATERT,
     AKTIV,
     UNDER_ARBEID
 }
+
+data class Arbeidsgiver(
+    val narmesteLeder: NarmesteLederDTO,
+)
+
+data class NarmesteLederDTO(
+    val virksomhetsnummer: String? = null,
+    val erAktiv: Boolean? = null,
+    val aktivFom: LocalDate? = null,
+    val aktivTom: LocalDate? = null,
+    val navn: String = "",
+    val fnr: String? = null,
+    val epost: String? = null,
+    val tlf: String? = null,
+    val sistInnlogget: LocalDateTime? = null,
+    val samtykke: Boolean? = null,
+    val evaluering: EvalueringDTO? = null,
+)
+
+data class EvalueringDTO(
+    val effekt: String? = null,
+    val hvorfor: String? = null,
+    val videre: String? = null,
+    val interneaktiviteter: Boolean = false,
+    val ekstratid: Boolean? = null,
+    val bistand: Boolean? = null,
+    val ingen: Boolean? = null,
+)
