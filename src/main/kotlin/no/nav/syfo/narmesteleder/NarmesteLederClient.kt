@@ -87,6 +87,16 @@ class NarmesteLederClient(
         }
     }
 
+    @Cacheable(
+        value = ["erNaermesteLederForAnsatt"],
+        key = "#naermesteLederFnr",
+        condition = "#naermesteLederFnr != null"
+    )
+    fun erNaermesteLederForAnsatt(naermesteLederFnr: String, ansattFnr: String): Boolean {
+        val ansatteFnr = ansatte(naermesteLederFnr)?.map { it.fnr } ?: emptyList()
+        return ansatteFnr.contains(ansattFnr)
+    }
+
     private fun headersForSykmeldt(fnr: String, accessToken: String): HttpEntity<String> {
         val headers = HttpHeaders()
         headers.contentType = MediaType.APPLICATION_JSON

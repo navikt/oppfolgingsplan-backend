@@ -15,7 +15,13 @@ import no.nav.syfo.oppfolgingsplan.service.OppfolgingsplanService
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType.APPLICATION_JSON_VALUE
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
 import java.nio.file.AccessDeniedException
 import javax.inject.Inject
 
@@ -42,7 +48,11 @@ class ArbeidsgiverOppfolgingsplanControllerV1 @Inject constructor(
         val arbeidsgiversOppfolgingsplaner =
             oppfolgingsplanService.arbeidsgiversOppfolgingsplanerPaFnr(innloggetIdent, personident, virksomhetsnummer)
                 .map { it.toBrukerOppfolgingsplan() }
-        arbeidsgiversOppfolgingsplaner.forEach { plan -> plan.populerPlanerMedAvbruttPlanListe(arbeidsgiversOppfolgingsplaner) }
+        arbeidsgiversOppfolgingsplaner.forEach { plan ->
+            plan.populerPlanerMedAvbruttPlanListe(
+                arbeidsgiversOppfolgingsplaner
+            )
+        }
         val arbeidsforhold =
             arbeidsforholdService.arbeidstakersStillingerForOrgnummer(personident, listOf(virksomhetsnummer))
         arbeidsgiversOppfolgingsplaner.forEach { plan -> plan.populerArbeidstakersStillinger(arbeidsforhold) }
@@ -50,7 +60,7 @@ class ArbeidsgiverOppfolgingsplanControllerV1 @Inject constructor(
     }
 
     @PostMapping(consumes = [APPLICATION_JSON_VALUE], produces = [APPLICATION_JSON_VALUE])
-    fun opprettOppfolgingsplanSomArbeidsgiver(@RequestBody opprettOppfolgingsplan: OpprettOppfolgingsplanRequest): Long {
+    fun opprettOppfolgingsplanSomAG(@RequestBody opprettOppfolgingsplan: OpprettOppfolgingsplanRequest): Long {
         val innloggetFnr = TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
             .fnrFromIdportenTokenX()
             .value
@@ -67,3 +77,8 @@ class ArbeidsgiverOppfolgingsplanControllerV1 @Inject constructor(
         }
     }
 }
+
+data class OpprettOppfolgingsplanRequest(
+    val sykmeldtFnr: String,
+    val virksomhetsnummer: String,
+)
