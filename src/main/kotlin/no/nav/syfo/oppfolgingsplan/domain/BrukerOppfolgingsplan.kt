@@ -52,10 +52,10 @@ fun OppfolgingsplanDTO.toBrukerOppfolgingsplan() =
 fun BrukerOppfolgingsplan.populerPlanerMedAvbruttPlanListe(planer: List<BrukerOppfolgingsplan>) {
     avbruttPlanListe = planer.filter {
         it.arbeidstaker.fnr == arbeidstaker.fnr &&
-                it.virksomhet.virksomhetsnummer == virksomhet.virksomhetsnummer &&
-                it.godkjentPlan != null &&
-                it.godkjentPlan.avbruttPlan != null &&
-                it.opprettetDato.isBefore(opprettetDato)
+            it.virksomhet.virksomhetsnummer == virksomhet.virksomhetsnummer &&
+            it.godkjentPlan != null &&
+            it.godkjentPlan.avbruttPlan != null &&
+            it.opprettetDato.isBefore(opprettetDato)
     }
         .sortedByDescending { brukerOppfolgingsplan -> brukerOppfolgingsplan.godkjentPlan?.avbruttPlan?.tidspunkt }
         .map {
@@ -67,10 +67,12 @@ fun BrukerOppfolgingsplan.populerPlanerMedAvbruttPlanListe(planer: List<BrukerOp
 fun BrukerOppfolgingsplan.populerArbeidstakersStillinger(arbeidsforhold: List<Stilling>) {
     arbeidstaker.stillinger = arbeidsforhold
         .filter { stilling ->
-            stilling.fom.isBefore(opprettetDato) && (stilling.tom == null || stilling.tom.isAfter(
-                opprettetDato
-            ))
+            stilling.fom?.isBefore(opprettetDato) == true && (
+                stilling.tom == null || stilling.tom?.isAfter(
+                    opprettetDato
+                ) == true
+                )
         }
-        .filter { stilling -> stilling.orgnummer.equals(virksomhet.virksomhetsnummer) }
+        .filter { stilling -> stilling.orgnummer == virksomhet.virksomhetsnummer }
         .map { stilling -> Stilling(stilling.yrke, stilling.prosent) }
 }
