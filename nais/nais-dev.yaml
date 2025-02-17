@@ -129,6 +129,6 @@ spec:
       value: api://dev-gcp.team-rocket.kodeverk-api/.default
     - name: AAREG_SCOPE
       value: api://dev-fss.arbeidsforhold.aareg-services-nais/.default
-  redis:
+  valkey:
     - instance: oppfolgingsplan
       access: readwrite
