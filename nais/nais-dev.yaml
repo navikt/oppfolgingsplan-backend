@@ -8,8 +8,8 @@ metadata:
 spec:
   image: {{ image }}
   replicas:
-    min: 1
-    max: 2
+    min: 2
+    max: 4
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
@@ -34,10 +34,11 @@ spec:
     - "https://oppfolgingsplan-backend.intern.dev.nav.no"
   resources:
     limits:
-      memory: 400Mi
+      cpu: 3000m
+      memory: 3060Mi
     requests:
-      cpu: 200m
-      memory: 400Mi
+      cpu: 1000m
+      memory: 2048Mi
   kafka:
     pool: nav-dev
   tokenx:
@@ -98,7 +99,7 @@ spec:
             value: "on"
   env:
     - name: KRR_URL
-      value: https://digdir-krr-proxy.intern.dev.nav.no/rest/v1/person
+      value: http://digdir-krr-proxy.team-rocket/rest/v1/person
     - name: KRR_SCOPE
       value: api://dev-gcp.team-rocket.digdir-krr-proxy/.default
     - name: SYFOBRUKERTILGANG_URL
@@ -129,6 +130,6 @@ spec:
       value: api://dev-gcp.team-rocket.kodeverk-api/.default
     - name: AAREG_SCOPE
       value: api://dev-fss.arbeidsforhold.aareg-services-nais/.default
-  redis:
+  valkey:
     - instance: oppfolgingsplan
       access: readwrite

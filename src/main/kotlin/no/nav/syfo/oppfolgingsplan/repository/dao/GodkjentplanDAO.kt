@@ -27,14 +27,6 @@ class GodkjentplanDAO(
         return godkjentPlan.firstOrNull()?.toGodkjentPlanDTO()
     }
 
-    fun godkjentPlanIdByOppfolgingsplanId(oppfolgingsplanId: Long): Long {
-        return jdbcTemplate.queryForObject(
-            "SELECT godkjentplan_id FROM godkjentplan WHERE oppfoelgingsdialog_id = ?",
-            Long::class.java,
-            oppfolgingsplanId
-        )
-    }
-
     fun hentIkkeJournalfoertePlaner(): List<GodkjentPlanDTO> {
         val godkjentePlaner = jdbcTemplate.query(
             "SELECT * FROM godkjentplan WHERE journalpost_id IS NULL AND delt_med_nav = 1",

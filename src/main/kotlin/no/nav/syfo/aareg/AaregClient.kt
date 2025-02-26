@@ -2,11 +2,11 @@ package no.nav.syfo.aareg
 
 import no.nav.syfo.aareg.exceptions.RestErrorFromAareg
 import no.nav.syfo.auth.azure.AzureAdTokenClient
+import no.nav.syfo.cache.ValkeyStore
 import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate
 class AaregClient(
     private val metrikk: Metrikk,
     private val azureAdTokenClient: AzureAdTokenClient,
+    private val valkeyStore: ValkeyStore,
     @Value("\${aareg.services.url}") private val url: String,
     @Value("\${aareg.scope}") private val scope: String
 ) {
@@ -28,8 +29,16 @@ class AaregClient(
         const val NAV_PERSONIDENT_HEADER = "Nav-Personident"
     }
 
-    @Cacheable(cacheNames = ["arbeidsforholdAT"], key = "#fnr", condition = "#fnr != null")
     fun arbeidsforholdArbeidstaker(fnr: String): List<Arbeidsforhold> {
+        val cacheKey = "aareg_arbeidsforholdAT_$fnr"
+        val cachedValue: List<Arbeidsforhold>? = valkeyStore.getListObject(cacheKey, Arbeidsforhold::class.java)
+
+        if (cachedValue != null) {
+            LOG.info("Using cached value for arbeidsforhold")
+            return cachedValue
+        }
+
+        LOG.info("Henter arbeidsforhold for arbeidstaker")
         metrikk.tellHendelse("call_aareg")
         val token = azureAdTokenClient.getSystemToken(scope)
 
@@ -41,7 +50,9 @@ class AaregClient(
                 object : ParameterizedTypeReference<List<Arbeidsforhold>>() {}
             )
             metrikk.tellHendelse("call_aareg_success")
-            response.body ?: emptyList()
+            val arbeidsforhold = response.body ?: emptyList()
+            valkeyStore.setObject(cacheKey, arbeidsforhold, 3600)
+            arbeidsforhold
         } catch (e: RestClientException) {
             metrikk.tellHendelse("call_aareg_fail")
             LOG.error("Error from AAREG with request-url: $url", e)

@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "3.3.6"
+    id("org.springframework.boot") version "3.4.3"
     id("io.spring.dependency-management") version "1.1.7"
     id("io.gitlab.arturbosch.detekt") version "1.23.6"
     kotlin("jvm") version "1.9.23"
@@ -38,6 +38,7 @@ val logstashLogbackEncoderVersion = "7.4"
 val owaspVersion = "20240325.1"
 val apacheCommonsTextVersion = "1.12.0"
 val detektVersion = "1.23.7"
+val jedisVersion = "5.2.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
@@ -45,7 +46,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-cache")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.hibernate.validator:hibernate-validator")
@@ -64,7 +64,6 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-
     testImplementation("junit:junit")
     testImplementation("no.nav.security:token-validation-spring-test:$tokenSupportVersion")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -76,6 +75,9 @@ dependencies {
     testImplementation("org.wiremock:wiremock-standalone:$wiremockVersion")
     testImplementation("io.kotest.extensions:kotest-extensions-wiremock:$wiremockKotestExtensionVersion")
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
+
+    // Cache
+    implementation("redis.clients:jedis:$jedisVersion")
 }
 
 tasks.withType<KotlinCompile> {

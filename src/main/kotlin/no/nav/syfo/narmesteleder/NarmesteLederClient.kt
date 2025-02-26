@@ -4,12 +4,12 @@ import no.nav.security.token.support.core.context.TokenValidationContextHolder
 import no.nav.syfo.auth.oidc.TokenUtil
 import no.nav.syfo.auth.tokenx.TokenXUtil
 import no.nav.syfo.auth.tokenx.tokendings.TokenDingsConsumer
+import no.nav.syfo.cache.ValkeyStore
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -26,11 +26,20 @@ class NarmesteLederClient(
     @Value("\${narmesteleder.client.id}") private var targetApp: String,
     private val tokenDingsConsumer: TokenDingsConsumer,
     private val contextHolder: TokenValidationContextHolder,
+    private val valkeyStore: ValkeyStore
 ) {
-    @Cacheable(value = ["aktive_ledere"], key = "#ansattFnr", condition = "#ansattFnr != null")
     fun alleLedereForSykmeldt(
         ansattFnr: String,
     ): List<NarmesteLederRelasjonDTO> {
+        val cacheKey = "narmesteleder_alleledere_$ansattFnr"
+        val cachedValue: List<NarmesteLederRelasjonDTO>? =
+            valkeyStore.getListObject(cacheKey, NarmesteLederRelasjonDTO::class.java)
+
+        if (cachedValue != null) {
+            log.info("Using cached value for alleLedereForSykmeldt")
+            return cachedValue
+        }
+
         val issuerToken = TokenUtil.getIssuerToken(contextHolder, TokenXUtil.TokenXIssuer.TOKENX)
         val exchangedToken = tokenDingsConsumer.exchangeToken(issuerToken, targetApp)
         try {
@@ -39,8 +48,9 @@ class NarmesteLederClient(
                 accessToken = exchangedToken
             )
             val relasjoner = response.body ?: emptyArray()
-            return relasjoner
-                .filter { it.arbeidstakerPersonIdentNumber == ansattFnr }
+            val result = relasjoner.filter { it.arbeidstakerPersonIdentNumber == ansattFnr }
+            valkeyStore.setObject(cacheKey, result, 3600) 
+            return result
         } catch (e: RestClientResponseException) {
             log.error(
                 "Error while requesting all NarmesteLeder of sykmeldt. Stacktrace: {}",
@@ -50,21 +60,28 @@ class NarmesteLederClient(
         }
     }
 
-    @Cacheable(
-        value = ["aktive_ansatte"],
-        key = "{#ansattFnr, #virksomhetsnummer}",
-        condition = "{#ansattFnr != null, #virksomhetsnummer != null}"
-    )
     fun aktivNarmesteLederIVirksomhet(
         ansattFnr: String,
         virksomhetsnummer: String,
     ): NarmesteLederRelasjonDTO? {
+        val cacheKey = "narmesteleder_aktivleder_${ansattFnr}_$virksomhetsnummer"
+        val cachedValue: NarmesteLederRelasjonDTO? =
+            valkeyStore.getObject(cacheKey, NarmesteLederRelasjonDTO::class.java)
+
+        if (cachedValue != null) {
+            log.info("Using cached values for aktivNarmesteLederIVirksomhet")
+            return cachedValue
+        }
+
         try {
             val narmesteLederRelasjoner = alleLedereForSykmeldt(ansattFnr)
-
-            return narmesteLederRelasjoner
+            val result = narmesteLederRelasjoner
                 .filter { it.aktivTom == null }
                 .firstOrNull { it.virksomhetsnummer == virksomhetsnummer }
+            if (result != null) {
+                valkeyStore.setObject(cacheKey, result, 3600)
+            }
+            return result
         } catch (e: RestClientResponseException) {
             log.error(
                 "Error while requesting aktive leder in virksomhet. Stacktrace: {}",
