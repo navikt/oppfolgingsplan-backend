@@ -49,7 +49,7 @@ class NarmesteLederClient(
             )
             val relasjoner = response.body ?: emptyArray()
             val result = relasjoner.filter { it.arbeidstakerPersonIdentNumber == ansattFnr }
-            valkeyStore.setObject(cacheKey, result, 3600) 
+            valkeyStore.setObject(cacheKey, result, 3600)
             return result
         } catch (e: RestClientResponseException) {
             log.error(
