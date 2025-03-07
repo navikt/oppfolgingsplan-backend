@@ -11,7 +11,7 @@ class BrukertilgangService @Autowired constructor(
     private var valkeyStore: ValkeyStore
 ) {
     fun tilgangTilOppslattIdent(innloggetIdent: String, oppslaattFnr: String): Boolean {
-        val cacheKey = "$innloggetIdent$oppslaattFnr"
+        val cacheKey = "tilgangTilOppslattIdent:$innloggetIdent$oppslaattFnr"
         val cachedValue: Boolean? = valkeyStore.getObject(cacheKey, Boolean::class.java)
 
         if (cachedValue != null) {

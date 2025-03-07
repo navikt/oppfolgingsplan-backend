@@ -54,7 +54,7 @@ class EregClient(
         }
 
         val navn = eregResponse(virksomhetsnummer).navn()
-        valkeyStore.setObject(cacheKey, navn, 3600)
+        valkeyStore.setObject(cacheKey, navn, 36000)
 
         return navn
     }

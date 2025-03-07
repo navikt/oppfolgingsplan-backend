@@ -31,7 +31,7 @@ class NarmesteLederClient(
     fun alleLedereForSykmeldt(
         ansattFnr: String,
     ): List<NarmesteLederRelasjonDTO> {
-        val cacheKey = "narmesteleder_alleledere_$ansattFnr"
+        val cacheKey = "alleLedereForSykmeldt_$ansattFnr"
         val cachedValue: List<NarmesteLederRelasjonDTO>? =
             valkeyStore.getListObject(cacheKey, NarmesteLederRelasjonDTO::class.java)
 
@@ -64,7 +64,7 @@ class NarmesteLederClient(
         ansattFnr: String,
         virksomhetsnummer: String,
     ): NarmesteLederRelasjonDTO? {
-        val cacheKey = "narmesteleder_aktivleder_${ansattFnr}_$virksomhetsnummer"
+        val cacheKey = "aktivNarmesteLederIVirksomhet_${ansattFnr}_$virksomhetsnummer"
         val cachedValue: NarmesteLederRelasjonDTO? =
             valkeyStore.getObject(cacheKey, NarmesteLederRelasjonDTO::class.java)
 
