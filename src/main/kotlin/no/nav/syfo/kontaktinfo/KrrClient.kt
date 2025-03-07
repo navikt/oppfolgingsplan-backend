@@ -1,13 +1,13 @@
 package no.nav.syfo.kontaktinfo
 
 import no.nav.syfo.auth.azure.AzureAdTokenClient
+import no.nav.syfo.cache.ValkeyStore
 import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -24,9 +24,17 @@ class KrrClient @Autowired constructor(
     private val metric: Metrikk,
     @Value("\${krr.scope}") private val krrScope: String,
     @Value("\${krr.url}") val krrUrl: String,
+    private val valkeyStore: ValkeyStore
 ) {
-    @Cacheable(cacheNames = ["krr_fnr"], key = "#fnr", condition = "#fnr != null")
     fun kontaktinformasjon(fnr: String): DigitalKontaktinfo {
+        val cacheKey = "krr_fnr_$fnr"
+        val cachedValue: DigitalKontaktinfo? = valkeyStore.getObject(cacheKey, DigitalKontaktinfo::class.java)
+
+        if (cachedValue != null) {
+            return cachedValue
+        }
+
+        log.info("Henter kontaktinformasjon fra KRR")
         val accessToken = "Bearer ${azureAdTokenConsumer.getSystemToken(krrScope)}"
         val response = RestTemplate().exchange(
             krrUrl,
@@ -39,10 +47,14 @@ class KrrClient @Autowired constructor(
             logAndThrowError(response, "Received response with status code: ${response.statusCode}")
         }
 
-        return response.body?.let {
+        val kontaktinfo = response.body?.let {
             metric.countOutgoingReponses(METRIC_CALL_KRR, response.statusCode.value())
             KontaktinfoMapper.mapPerson(it)
         } ?: logAndThrowError(response, "ResponseBody is null")
+
+        valkeyStore.setObject(cacheKey, kontaktinfo, 3600)
+
+        return kontaktinfo
     }
 
     private fun logAndThrowError(response: ResponseEntity<String>, message: String): Nothing {

@@ -17,8 +17,9 @@ import no.nav.syfo.aareg.utils.AaregClientTestUtils.AT_FNR
 import no.nav.syfo.aareg.utils.AaregClientTestUtils.ORGNUMMER
 import no.nav.syfo.aareg.utils.AaregClientTestUtils.simpleArbeidsforhold
 import no.nav.syfo.auth.azure.AzureAdTokenClient
+import no.nav.syfo.cache.ValkeyStore
 import no.nav.syfo.metric.Metrikk
-import no.nav.syfo.narmesteleder.objectMapper
+import no.nav.syfo.util.configuredJacksonMapper
 import org.springframework.test.util.ReflectionTestUtils
 
 const val AAREG_URL = "http://localhost:9000"
@@ -29,7 +30,9 @@ class AaregClientTest : FunSpec({
 
     val azureAdTokenClient = mockk<AzureAdTokenClient>()
 
-    val aaregClient = AaregClient(metrikk, azureAdTokenClient, AAREG_URL, AAREG_SCOPE)
+    val valkeyStore = mockk<ValkeyStore>(relaxed = true)
+
+    val aaregClient = AaregClient(metrikk, azureAdTokenClient, valkeyStore, AAREG_URL, AAREG_SCOPE)
 
     val isAaregServer = WireMockServer(9000)
     listener(WireMockListener(isAaregServer, ListenerMode.PER_TEST))
@@ -37,6 +40,7 @@ class AaregClientTest : FunSpec({
     beforeTest {
         ReflectionTestUtils.setField(aaregClient, "url", AAREG_URL)
         every { azureAdTokenClient.getSystemToken("scope") } returns "token"
+        every { valkeyStore.getListObject(any<String>(), Arbeidsforhold::class.java) } returns null
     }
     afterTest { isAaregServer.resetAll() }
 
@@ -70,7 +74,7 @@ fun WireMockServer.stubAaregRelasjoner(aaregRelasjoner: List<Arbeidsforhold>) {
         WireMock.get(WireMock.urlPathEqualTo("/api/v1/arbeidstaker/arbeidsforhold"))
             .willReturn(
                 aResponse()
-                    .withBody(objectMapper.writeValueAsString(aaregRelasjoner))
+                    .withBody(configuredJacksonMapper().writeValueAsString(aaregRelasjoner))
                     .withHeader("Content-Type", "application/json")
                     .withStatus(200)
             )

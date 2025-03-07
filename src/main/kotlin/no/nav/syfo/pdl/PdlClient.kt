@@ -1,11 +1,11 @@
 package no.nav.syfo.pdl
 
 import no.nav.syfo.auth.azure.AzureAdTokenClient
+import no.nav.syfo.cache.ValkeyStore
 import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.util.bearerHeader
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -29,6 +29,7 @@ class PdlClient(
     @Value("\${pdl.client.id}") private val pdlClientId: String,
     @Value("\${pdl.url}") private val pdlUrl: String,
     private val azureAdTokenClient: AzureAdTokenClient,
+    private val valkeyStore: ValkeyStore
 ) {
     fun person(ident: String): PdlHentPerson? {
         metric.tellHendelse("call_pdl")
@@ -71,9 +72,19 @@ class PdlClient(
         return HttpEntity(request, headers)
     }
 
-    @Cacheable(cacheNames = ["pdl_fnr"], key = "#aktorId")
     fun fnr(aktorId: String): String {
-        return hentIdentFraPDL(aktorId, IdentType.FOLKEREGISTERIDENT)
+        val cacheKey = "pdl_fnr_$aktorId"
+        val cachedValue: String? = valkeyStore.getObject(cacheKey, String::class.java)
+
+        if (cachedValue != null) {
+            LOG.info("Using cached value for PDL")
+            return cachedValue
+        }
+
+        val ident = hentIdentFraPDL(aktorId, IdentType.FOLKEREGISTERIDENT)
+        valkeyStore.setObject(cacheKey, ident, 3600)
+
+        return ident
     }
 
     fun hentIdentFraPDL(ident: String, identType: IdentType): String {

@@ -1,10 +1,5 @@
 package no.nav.syfo.narmesteleder
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
@@ -20,6 +15,8 @@ import no.nav.security.token.support.core.jwt.JwtToken
 import no.nav.security.token.support.core.jwt.JwtTokenClaims
 import no.nav.syfo.auth.tokenx.TokenXUtil
 import no.nav.syfo.auth.tokenx.tokendings.TokenDingsConsumer
+import no.nav.syfo.cache.ValkeyStore
+import no.nav.syfo.util.configuredJacksonMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -32,11 +29,13 @@ class NarmesteLederClientTest : FunSpec({
     val mockTokenValidationContext = mockk<TokenValidationContext>()
     val mockJwtTokenClaims = mockk<JwtTokenClaims>()
     val mockJwtToken = mockk<JwtToken>()
+    val valkeyStore = mockk<ValkeyStore>(relaxed = true)
     val narmesteLederClient = NarmesteLederClient(
         baseUrl = BASE_URL,
         targetApp = "hei",
         tokenDingsConsumer = tokenDingsConsumer,
-        contextHolder = contextHolder
+        contextHolder = contextHolder,
+        valkeyStore = valkeyStore,
     )
     val isnarmestelederServer = WireMockServer(9000)
     listener(WireMockListener(isnarmestelederServer, ListenerMode.PER_TEST))
@@ -49,6 +48,8 @@ class NarmesteLederClientTest : FunSpec({
         every { tokenDingsConsumer.exchangeToken(any(), any()) } returns "123abc"
         every { mockTokenValidationContext.getJwtToken(any()) } returns mockJwtToken
         every { mockJwtToken.encodedToken } returns "heihei"
+        every { valkeyStore.getListObject(any<String>(), NarmesteLederRelasjonDTO::class.java) } returns null
+        every { valkeyStore.getObject(any<String>(), NarmesteLederRelasjonDTO::class.java) } returns null
     }
 
     test("Henter alle ledere uavhengig av status") {
@@ -109,7 +110,7 @@ fun WireMockServer.stubNarmestelederRelasjoner(narmesteLederRelasjoner: List<Nar
         WireMock.get(WireMock.urlPathEqualTo("/api/selvbetjening/v1/narmestelederrelasjoner"))
             .willReturn(
                 aResponse()
-                    .withBody(objectMapper.writeValueAsString(narmesteLederRelasjoner))
+                    .withBody(configuredJacksonMapper().writeValueAsString(narmesteLederRelasjoner))
                     .withHeader("Content-Type", "application/json")
                     .withStatus(200)
             )
@@ -136,11 +137,4 @@ fun createNarmestelederRelasjon(
         virksomhetsnavn = "Hopp",
         arbeidstakerPersonIdentNumber = ANSATT_FNR,
     )
-}
-
-val objectMapper: ObjectMapper = ObjectMapper().apply {
-    registerKotlinModule()
-    registerModule(JavaTimeModule())
-    configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 }

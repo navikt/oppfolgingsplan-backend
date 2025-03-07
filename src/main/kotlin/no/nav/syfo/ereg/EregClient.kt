@@ -1,5 +1,6 @@
 package no.nav.syfo.ereg
 
+import no.nav.syfo.cache.ValkeyStore
 import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.util.APP_CONSUMER_ID
 import no.nav.syfo.util.NAV_CALL_ID_HEADER
@@ -7,7 +8,6 @@ import no.nav.syfo.util.NAV_CONSUMER_ID_HEADER
 import no.nav.syfo.util.createCallId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate
 class EregClient(
     @Value("\${ereg.url}") private val baseUrl: String,
     private val metric: Metrikk,
+    private val valkeyStore: ValkeyStore
 ) {
     fun eregResponse(virksomhetsnummer: String): EregOrganisasjonResponse {
         try {
@@ -43,13 +44,19 @@ class EregClient(
         }
     }
 
-    @Cacheable(
-        value = ["ereg_virksomhetsnavn"],
-        key = "#virksomhetsnummer",
-        condition = "#virksomhetsnummer != null",
-    )
     fun virksomhetsnavn(virksomhetsnummer: String): String {
-        return eregResponse(virksomhetsnummer).navn()
+        val cacheKey = "ereg_virksomhetsnavn_$virksomhetsnummer"
+        val cachedValue: String? = valkeyStore.getObject(cacheKey, String::class.java)
+
+        if (cachedValue != null) {
+            LOG.info("Using cached value for virksomhetsnavn")
+            return cachedValue
+        }
+
+        val navn = eregResponse(virksomhetsnummer).navn()
+        valkeyStore.setObject(cacheKey, navn, 36000)
+
+        return navn
     }
 
     private fun getEregUrl(): String {

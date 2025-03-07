@@ -17,22 +17,6 @@ spring:
     hikari:
       minimum-idle: 1
       maximum-pool-size: 5
-  data:
-    redis:
-      url: ${REDIS_URI_OPPFOLGINGSPLAN:}
-      username: ${REDIS_USERNAME_OPPFOLGINGSPLAN:}
-      password: ${REDIS_PASSWORD_OPPFOLGINGSPLAN:}
-      timeout: 2000
-      lettuce:
-        pool:
-          max-active: 16
-          min-idle: 8
-          enabled: true
-          time-between-eviction-runs: 10000
-  cache:
-    redis:
-      time-to-live: 3600
-      enable-statistics: true
 
 management:
   endpoint:
@@ -68,3 +52,8 @@ no.nav.security.jwt:
     tokenx:
       discoveryurl: ${TOKEN_X_WELL_KNOWN_URL}
       accepted_audience: ${TOKEN_X_CLIENT_ID}
+
+valkey:
+  url: ${VALKEY_URI_OPPFOLGINGSPLAN:}
+  username: ${VALKEY_USERNAME_OPPFOLGINGSPLAN:}
+  password: ${VALKEY_PASSWORD_OPPFOLGINGSPLAN:}

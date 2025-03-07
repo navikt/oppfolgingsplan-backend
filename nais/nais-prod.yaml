@@ -9,7 +9,7 @@ spec:
   image: {{ image }}
   replicas:
     min: 2
-    max: 3
+    max: 4
     cpuThresholdPercentage: 90
   port: 8080
   liveness:
@@ -34,10 +34,11 @@ spec:
     - "https://oppfolgingsplan-backend.intern.nav.no"
   resources:
     limits:
-      memory: 600Mi
+      cpu: 3000m
+      memory: 3060Mi
     requests:
-      cpu: 400m
-      memory: 600Mi
+      cpu: 1000m
+      memory: 2048Mi
   kafka:
     pool: nav-prod
   tokenx:
