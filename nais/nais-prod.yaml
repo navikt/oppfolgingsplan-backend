@@ -24,6 +24,10 @@ spec:
     periodSeconds: 5
     timeout: 5
   observability:
+    logging:
+      destinations:
+        - id: elastic
+        - id: loki
     autoInstrumentation:
       enabled: true
       runtime: java
