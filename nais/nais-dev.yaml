@@ -103,7 +103,7 @@ spec:
             value: "on"
   env:
     - name: KRR_URL
-      value: http://digdir-krr-proxy.team-rocket/rest/v1/person
+      value: http://digdir-krr-proxy.team-rocket/rest/v1/personer
     - name: KRR_SCOPE
       value: api://dev-gcp.team-rocket.digdir-krr-proxy/.default
     - name: SYFOBRUKERTILGANG_URL

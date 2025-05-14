@@ -9,8 +9,8 @@ import java.io.Serializable
 
 @Suppress("SerialVersionUIDInSerializableClass")
 data class DigitalKontaktinfo(
-    val kanVarsles: Boolean,
-    val reservert: Boolean,
+    val kanVarsles: Boolean = false,
+    val reservert: Boolean = true,
     val mobiltelefonnummer: String?,
     val epostadresse: String?,
 ) : Serializable
