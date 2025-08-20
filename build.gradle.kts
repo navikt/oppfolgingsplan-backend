@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.springframework.boot") version "3.4.5"
+    id("org.springframework.boot") version "3.5.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("io.gitlab.arturbosch.detekt") version "1.23.8"
     kotlin("jvm") version "2.0.21"
@@ -29,14 +29,14 @@ repositories {
 }
 
 val tokenSupportVersion = "4.1.8"
-val mockkVersion = "1.14.2"
+val mockkVersion = "1.14.5"
 val kotestVersion = "5.9.1"
-val wiremockVersion = "3.10.0"
+val wiremockVersion = "3.13.1"
 val wiremockKotestExtensionVersion = "3.1.0"
-val hikariVersion = "5.1.0"
+val hikariVersion = "6.3.2"
 val logstashLogbackEncoderVersion = "7.4"
 val owaspVersion = "20240325.1"
-val apacheCommonsTextVersion = "1.12.0"
+val apacheCommonsTextVersion = "1.14.0"
 val detektVersion = "1.23.8"
 val jedisVersion = "5.2.0"
 
