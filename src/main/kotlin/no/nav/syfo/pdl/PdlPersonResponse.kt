@@ -25,7 +25,8 @@ data class PdlErrorExtension(
 )
 
 data class PdlHentPerson(
-    val hentPerson: PdlPerson?
+    val hentPerson: PdlPerson?,
+    val hentGeografiskTilknytning: GeografiskTilknytning?,
 )
 
 data class PdlPerson(
@@ -37,6 +38,13 @@ data class PdlPersonNavn(
     val fornavn: String,
     val mellomnavn: String?,
     val etternavn: String
+)
+
+data class GeografiskTilknytning(
+    val gtType: String?,
+    val gtLand: String?,
+    val gtKommune: String?,
+    val gtBydel: String?,
 )
 
 data class Adressebeskyttelse(
@@ -67,6 +75,12 @@ fun PdlHentPerson.fullName(): String? {
         }
     }
 }
+
+fun PdlHentPerson.isPilotUser(): Boolean {
+    return pilotKommuner.contains(this.hentGeografiskTilknytning?.gtKommune)
+}
+
+val pilotKommuner = listOf("4614")
 
 fun PdlError.errorMessage(): String {
     return "${this.message} with code: ${extensions.code} and classification: ${extensions.classification}"
