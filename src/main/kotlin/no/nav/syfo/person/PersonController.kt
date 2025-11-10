@@ -8,6 +8,7 @@ import no.nav.syfo.auth.tokenx.TokenXUtil.fnrFromIdportenTokenX
 import no.nav.syfo.brukertilgang.BrukertilgangService
 import no.nav.syfo.pdl.PdlClient
 import no.nav.syfo.pdl.fullName
+import no.nav.syfo.pdl.isPilotUser
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.fodselsnummerInvalid
 import org.slf4j.Logger
@@ -53,19 +54,24 @@ class PersonController @Autowired constructor(
                     .status(HttpStatus.FORBIDDEN)
                     .build()
             } else {
-                val personNavn = pdlClient.person(fnr)?.fullName()
-                personNavn?.let {
-                    ResponseEntity
-                        .status(HttpStatus.OK)
-                        .body(
-                            Person(
-                                fnr = fnr,
-                                navn = it,
-                            ),
-                        )
-                } ?: ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .build()
+                val pdlPerson = pdlClient.person(fnr)
+
+                if (pdlPerson?.hentPerson == null) {
+                    LOG.error("Person ikke funnet i PDL")
+                    return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .build()
+                }
+
+               ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(
+                        Person(
+                            fnr = fnr,
+                            navn = pdlPerson.fullName() ?: "Ukjent navn",
+                            pilotUser = pdlPerson.isPilotUser()
+                        ),
+                    )
             }
         }
     }
