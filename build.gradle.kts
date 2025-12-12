@@ -36,7 +36,7 @@ val wiremockKotestExtensionVersion = "3.1.0"
 val hikariVersion = "6.3.2"
 val logstashLogbackEncoderVersion = "7.4"
 val owaspVersion = "20240325.1"
-val apacheCommonsTextVersion = "1.14.0"
+val apacheCommonsTextVersion = "1.15.0"
 val detektVersion = "1.23.8"
 val jedisVersion = "5.2.0"
 
