@@ -29,7 +29,7 @@ repositories {
 }
 
 val tokenSupportVersion = "5.0.37"
-val mockkVersion = "1.14.6"
+val mockkVersion = "1.14.7"
 val kotestVersion = "5.9.1"
 val wiremockVersion = "3.13.2"
 val wiremockKotestExtensionVersion = "3.1.0"
