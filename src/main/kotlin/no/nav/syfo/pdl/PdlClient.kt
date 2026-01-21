@@ -20,7 +20,7 @@ import java.io.IOException
 
 // Lenke til relevant behandling i behandlingskatalogen:
 // https://behandlingskatalog.nais.adeo.no/process/team/6a3b85e0-0e06-4f58-95bb-4318e31c4b2b/cca7c846-e5a5-4a10-bc7e-6abd6fc1b0f5
-const val BEHANDLINGSNUMMER_OPPFOLGINGSPLAN = "B275"
+const val BEHANDLINGSNUMMER_OPPFOLGINGSPLAN = "B426"
 const val PDL_BEHANDLINGSNUMMER_HEADER = "behandlingsnummer"
 
 @Service
