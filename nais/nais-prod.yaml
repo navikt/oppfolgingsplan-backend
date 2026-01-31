@@ -51,6 +51,10 @@ spec:
     inbound:
       rules:
         - application: oppfolgingsplan-frontend
+        - application: dialogmote-frontend
+        - application: dinesykmeldte
+        - application: ditt-sykefravaer
+          namespace: flex
     outbound:
       external:
         - host: "pdl-api.prod-fss-pub.nais.io"
