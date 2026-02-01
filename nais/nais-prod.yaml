@@ -114,6 +114,12 @@ spec:
       value: prod-gcp:team-esyfo:syfobrukertilgang
     - name: OPPFOLGINGSPLAN_FRONTEND_CLIENT_ID
       value: prod-gcp:team-esyfo:oppfolgingsplan-frontend
+    - name: DIALOGMOTE_FRONTEND_CLIENT_ID
+      value: prod-gcp:team-esyfo:dialogmote-frontend
+    - name: DINESYKMELDTE_CLIENT_ID
+      value: prod-gcp:team-esyfo:dinesykmeldte
+    - name: DITTSYKEFRAVAER_CLIENT_ID
+      value: prod-gcp:flex:ditt-sykefravaer
     - name: NARMESTELEDER_URL
       value: http://isnarmesteleder.teamsykefravr
     - name: NARMESTELEDER_CLIENT_ID
