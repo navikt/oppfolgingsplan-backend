@@ -37,7 +37,7 @@ class PersonController @Autowired constructor(
     private val dialogmoteClientId: String,
     @Value("\${dinesykmeldte.client.id}")
     private val dinesykmeldteClientId: String,
-    @Value("\${ditt.sykefravaer.client.id}")
+    @Value("\${dittsykefravaer.client.id}")
     private val dittSykefravaerClientId: String,
 ) {
     @ResponseBody
