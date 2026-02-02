@@ -33,13 +33,25 @@ class PersonController @Autowired constructor(
     private val brukertilgangService: BrukertilgangService,
     @Value("\${oppfolgingsplan.frontend.client.id}")
     private val oppfolgingsplanClientId: String,
+    @Value("\${dialogmote.frontend.client.id}")
+    private val dialogmoteClientId: String,
+    @Value("\${dinesykmeldte.client.id}")
+    private val dinesykmeldteClientId: String,
+    @Value("\${dittsykefravaer.client.id}")
+    private val dittSykefravaerClientId: String,
 ) {
     @ResponseBody
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getPerson(
         @RequestHeader(NAV_PERSONIDENT_HEADER) fnr: String,
     ): ResponseEntity<Person> {
-        val innloggetFnr = TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
+        val innloggetFnr = TokenXUtil.validateTokenXClaims(
+            contextHolder,
+            oppfolgingsplanClientId,
+            dialogmoteClientId,
+            dinesykmeldteClientId,
+            dittSykefravaerClientId
+        )
             .fnrFromIdportenTokenX()
             .value
         return if (fodselsnummerInvalid(fnr)) {
@@ -63,7 +75,7 @@ class PersonController @Autowired constructor(
                         .build()
                 }
 
-               ResponseEntity
+                ResponseEntity
                     .status(HttpStatus.OK)
                     .body(
                         Person(
