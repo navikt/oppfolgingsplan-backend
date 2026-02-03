@@ -77,17 +77,8 @@ fun PdlHentPerson.fullName(): String? {
 }
 
 fun PdlHentPerson.isPilotUser(): Boolean {
-    return pilotKommuner.contains(this.hentGeografiskTilknytning?.gtKommune)
+    return PilotKommuner.erPilot(this.hentGeografiskTilknytning?.gtKommune)
 }
-
-val pilotKommuner = listOf(
-    "4614", // Stord
-    "4613", // Bømlo
-    "4615", // Fitjar
-    "4617", // Kvinnherad
-    "4612", // Sveio
-    "4616", // Tysnes
-)
 
 fun PdlError.errorMessage(): String {
     return "${this.message} with code: ${extensions.code} and classification: ${extensions.classification}"
