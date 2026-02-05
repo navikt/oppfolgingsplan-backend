@@ -45,23 +45,26 @@ class PersonController @Autowired constructor(
     fun getPerson(
         @RequestHeader(NAV_PERSONIDENT_HEADER) fnr: String,
     ): ResponseEntity<Person> {
-        val innloggetFnr = TokenXUtil.validateTokenXClaims(
+        val claims = TokenXUtil.validateTokenXClaims(
             contextHolder,
             oppfolgingsplanClientId,
             dialogmoteClientId,
             dinesykmeldteClientId,
             dittSykefravaerClientId
         )
-            .fnrFromIdportenTokenX()
-            .value
+        val innloggetFnr = claims.fnrFromIdportenTokenX().value
+        val clientId = claims.getStringClaim("client_id")
         return if (fodselsnummerInvalid(fnr)) {
-            LOG.error("Ugyldig fnr ved henting av person")
+            LOG.error("Ugyldig fnr ved henting av person, client_id={}", clientId)
             return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .build()
         } else {
             if (!brukertilgangService.tilgangTilOppslattIdent(innloggetFnr, fnr)) {
-                LOG.error("Ikke tilgang til person: Bruker spør om noen andre enn seg selv eller egne ansatte")
+                LOG.error(
+                    "Ikke tilgang til person: Bruker spør om noen andre enn seg selv eller egne ansatte, client_id={}",
+                    clientId
+                )
                 ResponseEntity
                     .status(HttpStatus.FORBIDDEN)
                     .build()
@@ -69,7 +72,7 @@ class PersonController @Autowired constructor(
                 val pdlPerson = pdlClient.person(fnr)
 
                 if (pdlPerson?.hentPerson == null) {
-                    LOG.error("Person ikke funnet i PDL")
+                    LOG.error("Person ikke funnet i PDL, client_id={}", clientId)
                     return ResponseEntity
                         .status(HttpStatus.NOT_FOUND)
                         .build()
