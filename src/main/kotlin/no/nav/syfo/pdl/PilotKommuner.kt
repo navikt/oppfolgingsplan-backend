@@ -1,70 +1,50 @@
 package no.nav.syfo.pdl
 
 /**
- * Pilotkommuner (kommunenummer) som har tilgang.
+ * Sjekker om en bruker er del av piloten for ny oppfølgingsplan.
+ *
+ * Piloten rulles ut til hele Vestland fylke (kommunenummer 46xx)
+ * utenom Etne kommune (4611).
  */
 object PilotKommuner {
-    private val pilotKommunenr: Set<String> = linkedSetOf(
-        // Vestland – Region Sunnhordland
-        "4614", // Stord
-        "4613", // Bømlo
-        "4615", // Fitjar
-        "4617", // Kvinnherad
-        "4612", // Sveio
-        "4616", // Tysnes
+    private const val VESTLAND_FYLKESKODE = "46"
+    private const val ETNE_KOMMUNENUMMER = "4611"
 
-        // Vestland – Region Nordfjord
-        "4650", // Gloppen
-        "4651", // Stryn
-        "4648", // Bremanger
-        "4649", // Stad
+    /**
+     * Extracts kommunenummer from GeografiskTilknytning and checks if it's a pilot kommune.
+     *
+     * Pilot criteria: Vestland fylke (kommunenummer starting with "46") except Etne (4611)
+     *
+     * Handles different gtType values:
+     * - KOMMUNE: uses gtKommune directly
+     * - BYDEL: extracts first 4 digits from gtBydel (kommunenummer + bydelsnummer format)
+     * - UTLAND/UDEFINERT: returns false
+     *
+     * Note: Bergen, Oslo, Stavanger, and Trondheim typically have gtType = BYDEL
+     */
+    fun erPilot(geografiskTilknytning: GeografiskTilknytning?): Boolean {
+        if (geografiskTilknytning == null) return false
 
-        // Vestland – Region Midthordland
-        "4625", // Austevoll
-        "4624", // Bjørnafjorden
-        "4623", // Samnanger
+        val kommunenr = extractKommunenummer(geografiskTilknytning)
+        return kommunenr != null &&
+            kommunenr.startsWith(VESTLAND_FYLKESKODE) &&
+            kommunenr != ETNE_KOMMUNENUMMER
+    }
 
-        // Vestland – Region Nordhordland
-        "4630", // Osterøy
-        "4631", // Alver
-        "4634", // Masfjorden
-        "4629", // Modalen
-        "4635", // Gulen
-        "4632", // Austrheim
-        "4636", // Solund
-        "4633", // Fedje
-
-        // Vestland – Region Voss/Hardanger
-        "4618", // Ullensvang
-        "4619", // Eidfjord
-        "4620", // Ulvik
-        "4621", // Voss
-        "4628", // Vaksdal
-        "4622", // Kvam
-
-        // Vestland – Region Sunnfjord
-        "4647", // Sunnfjord
-        "4645", // Askvoll
-        "4602", // Kinn
-        "4646", // Fjaler
-        "4637", // Hyllestad
-        "4638", // Høyanger
-
-        // Vestland – Region Bergen
-        "4601", // Bergen
-
-        // Vestland – Region Vest
-        "4627", // Askøy
-        "4626", // Øygarden
-
-        // Vestland – Region Sogn
-        "4641", // Aurland
-        "4642", // Lærdal
-        "4643", // Årdal
-        "4644", // Luster
-        "4640", // Sogndal
-        "4639", // Vik
-    )
-
-    fun erPilot(kommunenr: String?): Boolean = kommunenr != null && kommunenr in pilotKommunenr
+    private fun extractKommunenummer(gt: GeografiskTilknytning): String? {
+        return when (gt.gtType) {
+            "KOMMUNE" -> gt.gtKommune
+            "BYDEL" -> {
+                if (!gt.gtKommune.isNullOrBlank()) {
+                    gt.gtKommune
+                } else if (gt.gtBydel != null && gt.gtBydel.length >= 4) {
+                    // gtBydel format: 6 digits (kommunenummer + bydelsnummer), e.g., "460101"
+                    gt.gtBydel.take(4)
+                } else {
+                    null
+                }
+            }
+            else -> null
+        }
+    }
 }

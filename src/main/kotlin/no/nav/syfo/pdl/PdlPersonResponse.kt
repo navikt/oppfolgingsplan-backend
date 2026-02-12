@@ -77,7 +77,7 @@ fun PdlHentPerson.fullName(): String? {
 }
 
 fun PdlHentPerson.isPilotUser(): Boolean {
-    return PilotKommuner.erPilot(this.hentGeografiskTilknytning?.gtKommune)
+    return PilotKommuner.erPilot(this.hentGeografiskTilknytning)
 }
 
 fun PdlError.errorMessage(): String {
