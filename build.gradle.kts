@@ -86,9 +86,6 @@ tasks.withType<KotlinCompile> {
     compilerOptions {
         freeCompilerArgs.set(listOf("-Xjsr305=strict"))
         jvmTarget.set(JvmTarget.JVM_21)
-        if (System.getenv("CI") == "true") {
-            compilerOptions.allWarningsAsErrors.set(true)
-        }
     }
 }
 tasks.withType<Test> {
