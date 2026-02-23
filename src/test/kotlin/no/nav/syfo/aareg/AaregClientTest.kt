@@ -5,8 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.extensions.wiremock.ListenerMode
-import io.kotest.extensions.wiremock.WireMockListener
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -35,14 +33,17 @@ class AaregClientTest : FunSpec({
     val aaregClient = AaregClient(metrikk, azureAdTokenClient, valkeyStore, AAREG_URL, AAREG_SCOPE)
 
     val isAaregServer = WireMockServer(9000)
-    listener(WireMockListener(isAaregServer, ListenerMode.PER_TEST))
 
     beforeTest {
+        isAaregServer.start()
         ReflectionTestUtils.setField(aaregClient, "url", AAREG_URL)
         every { azureAdTokenClient.getSystemToken("scope") } returns "token"
         every { valkeyStore.getListObject(any<String>(), Arbeidsforhold::class.java) } returns null
     }
-    afterTest { isAaregServer.resetAll() }
+    afterTest {
+        isAaregServer.resetAll()
+        isAaregServer.stop()
+    }
 
     test("get arbeidsforhold arbeidstaker") {
 

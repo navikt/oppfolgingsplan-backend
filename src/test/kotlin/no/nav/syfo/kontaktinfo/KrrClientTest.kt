@@ -5,8 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.extensions.wiremock.ListenerMode
-import io.kotest.extensions.wiremock.WireMockListener
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.mockk.every
@@ -34,11 +32,14 @@ class KrrClientTest : FunSpec({
 
     val krrClient = KrrClient(azureAdTokenConsumer, metric, krrScope, krrUrl, valkeyStore)
     val krrServer = WireMockServer(9000)
-    listener(WireMockListener(krrServer, ListenerMode.PER_TEST))
     beforeTest {
+        krrServer.start()
         every { azureAdTokenConsumer.getSystemToken(krrScope) } returns UUID.randomUUID().toString()
         every { metric.countOutgoingReponses(KrrClient.METRIC_CALL_KRR, any()) } returns Unit
         every { valkeyStore.setObject(any(), any<DigitalKontaktinfo>(), any()) } returns Unit
+    }
+    afterTest {
+        krrServer.stop()
     }
 
     test("Skips request and returns value from Valkey if found") {

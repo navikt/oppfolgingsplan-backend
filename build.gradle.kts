@@ -30,9 +30,8 @@ repositories {
 
 val tokenSupportVersion = "5.0.37"
 val mockkVersion = "1.14.9"
-val kotestVersion = "5.9.1"
+val kotestVersion = "6.1.3"
 val wiremockVersion = "3.13.2"
-val wiremockKotestExtensionVersion = "3.1.0"
 val hikariVersion = "6.3.2"
 val logstashLogbackEncoderVersion = "9.0"
 val owaspVersion = "20240325.1"
@@ -76,7 +75,6 @@ dependencies {
     testImplementation("io.kotest:kotest-property:$kotestVersion")
     testImplementation("com.h2database:h2")
     testImplementation("org.wiremock:wiremock-standalone:$wiremockVersion")
-    testImplementation("io.kotest.extensions:kotest-extensions-wiremock:$wiremockKotestExtensionVersion")
 
     // Cache
     implementation("redis.clients:jedis:$jedisVersion")

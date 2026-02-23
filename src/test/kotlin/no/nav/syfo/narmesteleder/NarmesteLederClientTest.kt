@@ -4,8 +4,6 @@ import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.extensions.wiremock.ListenerMode
-import io.kotest.extensions.wiremock.WireMockListener
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -38,9 +36,9 @@ class NarmesteLederClientTest : FunSpec({
         valkeyStore = valkeyStore,
     )
     val isnarmestelederServer = WireMockServer(9000)
-    listener(WireMockListener(isnarmestelederServer, ListenerMode.PER_TEST))
 
     beforeTest {
+        isnarmestelederServer.start()
         every { contextHolder.getTokenValidationContext() } returns mockTokenValidationContext
         every { mockTokenValidationContext.getClaims(TokenXUtil.TokenXIssuer.TOKENX) } returns mockJwtTokenClaims
         every { mockJwtTokenClaims.getStringClaim("pid") } returns ANSATT_FNR
@@ -50,6 +48,10 @@ class NarmesteLederClientTest : FunSpec({
         every { mockJwtToken.encodedToken } returns "heihei"
         every { valkeyStore.getListObject(any<String>(), NarmesteLederRelasjonDTO::class.java) } returns null
         every { valkeyStore.getObject(any<String>(), NarmesteLederRelasjonDTO::class.java) } returns null
+    }
+
+    afterTest {
+        isnarmestelederServer.stop()
     }
 
     test("Henter alle ledere uavhengig av status") {
