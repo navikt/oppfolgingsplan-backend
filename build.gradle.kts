@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "4.0.2"
     id("io.spring.dependency-management") version "1.1.7"
-    id("io.gitlab.arturbosch.detekt") version "1.23.8"
     kotlin("jvm") version "2.2.0"
     kotlin("plugin.spring") version "2.2.0"
 }
@@ -78,7 +77,6 @@ dependencies {
     testImplementation("com.h2database:h2")
     testImplementation("org.wiremock:wiremock-standalone:$wiremockVersion")
     testImplementation("io.kotest.extensions:kotest-extensions-wiremock:$wiremockKotestExtensionVersion")
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:$detektVersion")
 
     // Cache
     implementation("redis.clients:jedis:$jedisVersion")
@@ -95,9 +93,4 @@ tasks.withType<KotlinCompile> {
 }
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-detekt {
-    config.from("detekt-config.yml")
-    buildUponDefaultConfig = true
 }
