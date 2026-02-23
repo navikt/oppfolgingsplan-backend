@@ -40,7 +40,7 @@ class NarmesteLederController @Autowired constructor(
     fun getAktivNarmesteLederIVirksomhet(
         @RequestHeader(NAV_PERSONIDENT_HEADER) fnr: String,
         @RequestHeader(ORGNUMMER_HEADER) virksomhetsnummer: String,
-    ): ResponseEntity<NarmesteLeder?> {
+    ): ResponseEntity<NarmesteLeder> {
         metrikk.tellHendelse("get_narmesteledere")
 
         val innloggetIdent = TokenXUtil.validateTokenXClaims(contextHolder, oppfolgingsplanClientId)
