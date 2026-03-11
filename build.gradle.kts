@@ -37,7 +37,7 @@ val logstashLogbackEncoderVersion = "9.0"
 val owaspVersion = "20240325.1"
 val apacheCommonsTextVersion = "1.15.0"
 val detektVersion = "1.23.8"
-val jedisVersion = "5.2.0"
+val jedisVersion = "7.3.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
