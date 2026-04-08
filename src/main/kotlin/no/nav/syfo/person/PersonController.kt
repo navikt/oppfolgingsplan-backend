@@ -39,7 +39,7 @@ class PersonController @Autowired constructor(
     private val dinesykmeldteClientId: String,
     @Value("\${dittsykefravaer.client.id}")
     private val dittSykefravaerClientId: String,
-    @Value("\${toggle.ny.oppfolgingsplan.for.alle:false}")
+    @Value("\${toggle.ny.oppfolgingsplan.for.alle}")
     private val toggleNyOppfolgingsplanForAlle: Boolean,
 ) {
     @ResponseBody
