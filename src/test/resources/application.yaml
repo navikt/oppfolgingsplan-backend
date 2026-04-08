@@ -47,6 +47,7 @@ token.x.private.jwk: "tokenx-jwk"
 token.x.token.endpoint: "https://tokenx-endpoint"
 
 oppfolgingsplan.frontend.client.id: "localhost:team-esyfo:oppfolgingsplan-frontend"
+bruk.gammel.oppfolgingsplan: true
 
 nais.cluster.name: 'local'
 environment.name: 'dev'
