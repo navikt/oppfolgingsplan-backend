@@ -7,6 +7,7 @@ import no.nav.syfo.auth.tokenx.TokenXUtil.TokenXIssuer.TOKENX
 import no.nav.syfo.auth.tokenx.TokenXUtil.fnrFromIdportenTokenX
 import no.nav.syfo.brukertilgang.BrukertilgangService
 import no.nav.syfo.pdl.PdlClient
+import no.nav.syfo.pdl.PdlHentPerson
 import no.nav.syfo.pdl.fullName
 import no.nav.syfo.pdl.isPilotUser
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
@@ -39,8 +40,8 @@ class PersonController @Autowired constructor(
     private val dinesykmeldteClientId: String,
     @Value("\${dittsykefravaer.client.id}")
     private val dittSykefravaerClientId: String,
-    @Value("\${toggle.ny.oppfolgingsplan.for.alle}")
-    private val toggleNyOppfolgingsplanForAlle: Boolean,
+    @Value("\${bruk.gammel.oppfolgingsplan}")
+    private val brukGammelOppfolgingsplan: Boolean,
 ) {
     @ResponseBody
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -83,12 +84,19 @@ class PersonController @Autowired constructor(
                         Person(
                             fnr = fnr,
                             navn = pdlPerson.fullName() ?: "Ukjent navn",
-                            pilotUser = toggleNyOppfolgingsplanForAlle || pdlPerson.isPilotUser()
+                            pilotUser = erPilotbrukerForNyOppfolgingsplan(pdlPerson)
                         ),
                     )
             }
         }
     }
+
+    private fun erPilotbrukerForNyOppfolgingsplan(pdlPerson: PdlHentPerson): Boolean =
+        if (!brukGammelOppfolgingsplan) {
+            true
+        } else {
+            pdlPerson.isPilotUser()
+        }
 
     companion object {
         private val LOG: Logger = LoggerFactory.getLogger(PersonController::class.java)

@@ -34,12 +34,12 @@ class PersonControllerTest : FunSpec({
         every { brukertilgangService.tilgangTilOppslattIdent(innloggetFnr, fnr) } returns true
     }
 
-    test("getPerson returnerer pilotUser true nar toggle er true uavhengig av geografisk tilknytning") {
+    test("getPerson returnerer pilotUser true nar gammel oppfolgingsplan er skrudd av uavhengig av geografisk tilknytning") {
         val controller = personController(
             contextHolder = contextHolder,
             pdlClient = pdlClient,
             brukertilgangService = brukertilgangService,
-            toggleNyOppfolgingsplanForAlle = true,
+            brukGammelOppfolgingsplan = false,
         )
         every { pdlClient.person(fnr) } returns pdlPerson(kommune = "0301")
 
@@ -49,12 +49,12 @@ class PersonControllerTest : FunSpec({
         response.body?.pilotUser shouldBe true
     }
 
-    test("getPerson returnerer pilotUser false nar toggle er false og bruker ikke er pilot") {
+    test("getPerson returnerer pilotUser false nar gammel oppfolgingsplan er skrudd pa og bruker ikke er pilot") {
         val controller = personController(
             contextHolder = contextHolder,
             pdlClient = pdlClient,
             brukertilgangService = brukertilgangService,
-            toggleNyOppfolgingsplanForAlle = false,
+            brukGammelOppfolgingsplan = true,
         )
         every { pdlClient.person(fnr) } returns pdlPerson(kommune = "0301")
 
@@ -64,12 +64,12 @@ class PersonControllerTest : FunSpec({
         response.body?.pilotUser shouldBe false
     }
 
-    test("getPerson returnerer pilotUser true nar toggle er false og bruker er pilot") {
+    test("getPerson returnerer pilotUser true nar gammel oppfolgingsplan er skrudd pa og bruker er pilot") {
         val controller = personController(
             contextHolder = contextHolder,
             pdlClient = pdlClient,
             brukertilgangService = brukertilgangService,
-            toggleNyOppfolgingsplanForAlle = false,
+            brukGammelOppfolgingsplan = true,
         )
         every { pdlClient.person(fnr) } returns pdlPerson(kommune = "4614")
 
@@ -84,7 +84,7 @@ private fun personController(
     contextHolder: TokenValidationContextHolder,
     pdlClient: PdlClient,
     brukertilgangService: BrukertilgangService,
-    toggleNyOppfolgingsplanForAlle: Boolean,
+    brukGammelOppfolgingsplan: Boolean,
 ) =
     PersonController(
         contextHolder = contextHolder,
@@ -94,7 +94,7 @@ private fun personController(
         dialogmoteClientId = "dialogmote-client-id",
         dinesykmeldteClientId = "dinesykmeldte-client-id",
         dittSykefravaerClientId = "dittsykefravaer-client-id",
-        toggleNyOppfolgingsplanForAlle = toggleNyOppfolgingsplanForAlle,
+        brukGammelOppfolgingsplan = brukGammelOppfolgingsplan,
     )
 
 private fun pdlPerson(kommune: String) = PdlHentPerson(

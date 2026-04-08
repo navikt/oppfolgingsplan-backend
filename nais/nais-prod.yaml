@@ -120,8 +120,8 @@ spec:
       value: prod-gcp:team-esyfo:dinesykmeldte
     - name: DITTSYKEFRAVAER_CLIENT_ID
       value: prod-gcp:flex:ditt-sykefravaer
-    - name: TOGGLE_NY_OPPFOLGINGSPLAN_FOR_ALLE
-      value: "false"
+    - name: BRUK_GAMMEL_OPPFOLGINGSPLAN
+      value: "true"
     - name: NARMESTELEDER_URL
       value: http://isnarmesteleder.teamsykefravr
     - name: NARMESTELEDER_CLIENT_ID
