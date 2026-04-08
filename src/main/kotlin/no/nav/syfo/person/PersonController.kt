@@ -39,6 +39,8 @@ class PersonController @Autowired constructor(
     private val dinesykmeldteClientId: String,
     @Value("\${dittsykefravaer.client.id}")
     private val dittSykefravaerClientId: String,
+    @Value("\${toggle.ny.oppfolgingsplan.for.alle:false}")
+    private val toggleNyOppfolgingsplanForAlle: Boolean,
 ) {
     @ResponseBody
     @GetMapping(produces = [MediaType.APPLICATION_JSON_VALUE])
@@ -81,7 +83,7 @@ class PersonController @Autowired constructor(
                         Person(
                             fnr = fnr,
                             navn = pdlPerson.fullName() ?: "Ukjent navn",
-                            pilotUser = pdlPerson.isPilotUser()
+                            pilotUser = toggleNyOppfolgingsplanForAlle || pdlPerson.isPilotUser()
                         ),
                     )
             }
