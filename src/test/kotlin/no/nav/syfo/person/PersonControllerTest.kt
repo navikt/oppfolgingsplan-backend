@@ -63,6 +63,21 @@ class PersonControllerTest : FunSpec({
         response.statusCode shouldBe HttpStatus.OK
         response.body?.pilotUser shouldBe false
     }
+
+    test("getPerson returnerer pilotUser true nar toggle er false og bruker er pilot") {
+        val controller = personController(
+            contextHolder = contextHolder,
+            pdlClient = pdlClient,
+            brukertilgangService = brukertilgangService,
+            toggleNyOppfolgingsplanForAlle = false,
+        )
+        every { pdlClient.person(fnr) } returns pdlPerson(kommune = "4614")
+
+        val response = controller.getPerson(fnr)
+
+        response.statusCode shouldBe HttpStatus.OK
+        response.body?.pilotUser shouldBe true
+    }
 })
 
 private fun personController(
