@@ -5,9 +5,9 @@ on:
   workflow_dispatch:
 jobs:
   sync:
-    uses: navikt/copilot-kitchen/.github/workflows/copilot-sync.yml@main
+    uses: navikt/hovmester/.github/workflows/hovmester-sync.yml@main
     with:
-      collections: "esyfo,backend"
+      collections: "hovmester,backend"
     secrets:
       APP_PRIVATE_KEY: ${{ secrets.AUTOMERGE_APP_PRIVATE_KEY }}
     permissions:
