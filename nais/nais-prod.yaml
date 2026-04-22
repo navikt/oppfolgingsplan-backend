@@ -121,7 +121,7 @@ spec:
     - name: DITTSYKEFRAVAER_CLIENT_ID
       value: prod-gcp:flex:ditt-sykefravaer
     - name: BRUK_GAMMEL_OPPFOLGINGSPLAN
-      value: "true"
+      value: "false"
     - name: NARMESTELEDER_URL
       value: http://isnarmesteleder.teamsykefravr
     - name: NARMESTELEDER_CLIENT_ID
