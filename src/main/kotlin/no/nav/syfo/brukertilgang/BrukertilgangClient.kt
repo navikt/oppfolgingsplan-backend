@@ -11,7 +11,6 @@ import no.nav.syfo.util.NAV_CONSUMER_ID_HEADER
 import no.nav.syfo.util.NAV_PERSONIDENT_HEADER
 import no.nav.syfo.util.bearerHeader
 import no.nav.syfo.util.createCallId
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -19,6 +18,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
+import org.springframework.web.client.ResourceAccessException
 import org.springframework.web.client.RestClientResponseException
 import org.springframework.web.client.RestTemplate
 
@@ -27,6 +27,7 @@ class BrukertilgangClient(
     private val contextHolder: TokenValidationContextHolder,
     private val metrikk: Metrikk,
     private val tokenDingsConsumer: TokenDingsConsumer,
+    private val restTemplate: RestTemplate,
     @Value("\${syfobrukertilgang.url}") private val baseUrl: String,
     @Value("\${syfobrukertilgang.id}") private var targetApp: String,
 ) {
@@ -41,6 +42,8 @@ class BrukertilgangClient(
             response.body!!
         } catch (e: RestClientResponseException) {
             handleException(e, httpEntity)
+        } catch (e: ResourceAccessException) {
+            handleTimeout(e, httpEntity)
         }
     }
 
@@ -54,7 +57,7 @@ class BrukertilgangClient(
     }
 
     private fun getResponse(httpEntity: HttpEntity<*>): ResponseEntity<Boolean> {
-        return RestTemplate().exchange(
+        return restTemplate.exchange(
             "$baseUrl/api/v2/tilgang/ansatt",
             HttpMethod.GET,
             httpEntity,
@@ -62,25 +65,39 @@ class BrukertilgangClient(
         )
     }
 
-    private fun handleException(e: RestClientResponseException, httpEntity: HttpEntity<*>): Nothing {
+    private fun handleException(e: RestClientResponseException, httpEntity: HttpEntity<*>): Boolean {
         metrikk.countOutgoingReponses(METRIC_CALL_BRUKERTILGANG, e.statusCode.value())
-        if (e.statusCode.isSameCodeAs(HttpStatus.UNAUTHORIZED)) {
-            throw RequestUnauthorizedException(
-                "Unauthorized request to get access to Ansatt from Syfobrukertilgang"
-            )
-        } else {
-            LOG.error(
-                "Error requesting ansatt access from syfobrukertilgang with callId {}: ",
-                httpEntity.headers[NAV_CALL_ID_HEADER],
-                e
-            )
-            throw e
+        val callId = httpEntity.headers[NAV_CALL_ID_HEADER]?.firstOrNull()
+        return when {
+            e.statusCode.isSameCodeAs(HttpStatus.UNAUTHORIZED) -> throwUnauthorized()
+            e.statusCode.isSameCodeAs(HttpStatus.FORBIDDEN) -> false
+            e.statusCode.is5xxServerError -> throwDependencyUnavailable(e.statusCode.value(), callId, e)
+            else -> rethrow(e)
         }
     }
 
     companion object {
-        private val LOG = LoggerFactory.getLogger(BrukertilgangClient::class.java)
-
         const val METRIC_CALL_BRUKERTILGANG = "call_syfobrukertilgang"
+    }
+
+    private fun handleTimeout(e: ResourceAccessException, httpEntity: HttpEntity<*>): Nothing {
+        metrikk.countOutgoingReponses(METRIC_CALL_BRUKERTILGANG, HttpStatus.SERVICE_UNAVAILABLE.value())
+        val callId = httpEntity.headers[NAV_CALL_ID_HEADER]?.firstOrNull()
+        throw DependencyUnavailableException(
+            "Syfobrukertilgang timeout for callId $callId",
+            e
+        )
+    }
+
+    private fun throwUnauthorized(): Nothing {
+        throw RequestUnauthorizedException("Unauthorized request to get access to Ansatt from Syfobrukertilgang")
+    }
+
+    private fun throwDependencyUnavailable(status: Int, callId: String?, cause: Throwable): Nothing {
+        throw DependencyUnavailableException("Syfobrukertilgang error $status for callId $callId", cause)
+    }
+
+    private fun rethrow(e: RestClientResponseException): Nothing {
+        throw e
     }
 }
