@@ -3,6 +3,7 @@ package no.nav.syfo.kontaktinfo
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -17,28 +18,29 @@ import no.nav.syfo.util.configuredJacksonMapper
 import org.springframework.http.HttpStatus
 import java.util.UUID
 
-const val BASE_URL = "http://localhost:9000"
 const val REST_PATH = "/rest/v1/personer"
 
 class KrrClientTest : FunSpec({
     val azureAdTokenConsumer = mockk<AzureAdTokenClient>()
     val metric = mockk<Metrikk>()
     val krrScope = "some-scope"
-    val krrUrl = "$BASE_URL$REST_PATH"
+    val krrServer = WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort()).also { it.start() }
+    val baseUrl = "http://localhost:${krrServer.port()}"
+    val krrUrl = "$baseUrl$REST_PATH"
     val valkeyStore = mockk<ValkeyStore>()
 
     val validFnr = "12345678910"
     val unknownFnr = "01987654321"
 
     val krrClient = KrrClient(azureAdTokenConsumer, metric, krrScope, krrUrl, valkeyStore)
-    val krrServer = WireMockServer(9000)
     beforeTest {
-        krrServer.start()
+        krrServer.resetAll()
         every { azureAdTokenConsumer.getSystemToken(krrScope) } returns UUID.randomUUID().toString()
         every { metric.countOutgoingReponses(KrrClient.METRIC_CALL_KRR, any()) } returns Unit
         every { valkeyStore.setObject(any(), any<DigitalKontaktinfo>(), any()) } returns Unit
     }
-    afterTest {
+    afterSpec {
+        krrServer.resetAll()
         krrServer.stop()
     }
 

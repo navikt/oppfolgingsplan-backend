@@ -3,6 +3,7 @@ package no.nav.syfo.narmesteleder
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -18,7 +19,6 @@ import no.nav.syfo.util.configuredJacksonMapper
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-const val BASE_URL = "http://localhost:9000"
 const val ANSATT_FNR = "12345678910"
 
 class NarmesteLederClientTest : FunSpec({
@@ -28,17 +28,18 @@ class NarmesteLederClientTest : FunSpec({
     val mockJwtTokenClaims = mockk<JwtTokenClaims>()
     val mockJwtToken = mockk<JwtToken>()
     val valkeyStore = mockk<ValkeyStore>(relaxed = true)
+    val isnarmestelederServer =
+        WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort()).also { it.start() }
     val narmesteLederClient = NarmesteLederClient(
-        baseUrl = BASE_URL,
+        baseUrl = "http://localhost:${isnarmestelederServer.port()}",
         targetApp = "hei",
         tokenDingsConsumer = tokenDingsConsumer,
         contextHolder = contextHolder,
         valkeyStore = valkeyStore,
     )
-    val isnarmestelederServer = WireMockServer(9000)
 
     beforeTest {
-        isnarmestelederServer.start()
+        isnarmestelederServer.resetAll()
         every { contextHolder.getTokenValidationContext() } returns mockTokenValidationContext
         every { mockTokenValidationContext.getClaims(TokenXUtil.TokenXIssuer.TOKENX) } returns mockJwtTokenClaims
         every { mockJwtTokenClaims.getStringClaim("pid") } returns ANSATT_FNR
@@ -50,7 +51,8 @@ class NarmesteLederClientTest : FunSpec({
         every { valkeyStore.getObject(any<String>(), NarmesteLederRelasjonDTO::class.java) } returns null
     }
 
-    afterTest {
+    afterSpec {
+        isnarmestelederServer.resetAll()
         isnarmestelederServer.stop()
     }
 
