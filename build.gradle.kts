@@ -38,6 +38,9 @@ val owaspVersion = "20240325.1"
 val apacheCommonsTextVersion = "1.15.0"
 val detektVersion = "1.23.8"
 val jedisVersion = "7.5.0"
+val tomcatVersion = "11.0.22"
+
+extra["tomcat.version"] = tomcatVersion
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
