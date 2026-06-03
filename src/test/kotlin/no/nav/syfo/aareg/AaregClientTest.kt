@@ -3,6 +3,7 @@ package no.nav.syfo.aareg
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -18,9 +19,7 @@ import no.nav.syfo.auth.azure.AzureAdTokenClient
 import no.nav.syfo.cache.ValkeyStore
 import no.nav.syfo.metric.Metrikk
 import no.nav.syfo.util.configuredJacksonMapper
-import org.springframework.test.util.ReflectionTestUtils
 
-const val AAREG_URL = "http://localhost:9000"
 const val AAREG_SCOPE = "scope"
 
 class AaregClientTest : FunSpec({
@@ -30,17 +29,21 @@ class AaregClientTest : FunSpec({
 
     val valkeyStore = mockk<ValkeyStore>(relaxed = true)
 
-    val aaregClient = AaregClient(metrikk, azureAdTokenClient, valkeyStore, AAREG_URL, AAREG_SCOPE)
-
-    val isAaregServer = WireMockServer(9000)
+    val isAaregServer = WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort()).also { it.start() }
+    val aaregClient = AaregClient(
+        metrikk = metrikk,
+        azureAdTokenClient = azureAdTokenClient,
+        valkeyStore = valkeyStore,
+        url = "http://localhost:${isAaregServer.port()}",
+        scope = AAREG_SCOPE,
+    )
 
     beforeTest {
-        isAaregServer.start()
-        ReflectionTestUtils.setField(aaregClient, "url", AAREG_URL)
-        every { azureAdTokenClient.getSystemToken("scope") } returns "token"
+        isAaregServer.resetAll()
+        every { azureAdTokenClient.getSystemToken(AAREG_SCOPE) } returns "token"
         every { valkeyStore.getListObject(any<String>(), Arbeidsforhold::class.java) } returns null
     }
-    afterTest {
+    afterSpec {
         isAaregServer.resetAll()
         isAaregServer.stop()
     }
