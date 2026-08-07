@@ -11,21 +11,33 @@ class BrukertilgangService @Autowired constructor(
     private var valkeyStore: ValkeyStore
 ) {
     fun tilgangTilOppslattIdent(innloggetIdent: String, oppslaattFnr: String): Boolean {
-        val cacheKey = "tilgangTilOppslattIdent:$innloggetIdent$oppslaattFnr"
+        val cacheKey = "tilgangTilOppslattIdent:$innloggetIdent:$oppslaattFnr"
+        val downKey = "tilgangTilOppslattIdent:down:$innloggetIdent:$oppslaattFnr"
         val cachedValue: Boolean? = valkeyStore.getObject(cacheKey, Boolean::class.java)
 
         if (cachedValue != null) {
-            log.info("Using cached value for tilgang")
+            log.debug("Using cached value for tilgang")
             return cachedValue
         }
 
-        val hasAccess = oppslaattFnr == innloggetIdent || brukertilgangClient.hasAccessToAnsatt(oppslaattFnr)
-        valkeyStore.setObject(cacheKey, hasAccess, 3600)
+        val cachedDown: Boolean? = valkeyStore.getObject(downKey, Boolean::class.java)
+        if (cachedDown == true) {
+            throw DependencyUnavailableException("Syfobrukertilgang unavailable (cached)")
+        }
 
-        return hasAccess
+        return try {
+            val hasAccess = oppslaattFnr == innloggetIdent || brukertilgangClient.hasAccessToAnsatt(oppslaattFnr)
+            valkeyStore.setObject(cacheKey, hasAccess, POSITIVE_CACHE_SECONDS)
+            hasAccess
+        } catch (e: DependencyUnavailableException) {
+            valkeyStore.setObject(downKey, true, NEGATIVE_CACHE_SECONDS)
+            throw e
+        }
     }
 
     companion object {
         private val log = LoggerFactory.getLogger(BrukertilgangService::class.java)
+        private const val POSITIVE_CACHE_SECONDS = 3600L
+        private const val NEGATIVE_CACHE_SECONDS = 60L
     }
 }
